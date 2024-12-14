@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, FormControl, InputLabel, MenuItem, TextField } from '@mui/material';
+import { Box, Grid, Paper, FormControl, MenuItem, TextField } from '@mui/material';
 import { Autocomplete } from '@mui/material';
 import TradingViewChart from './TradingViewChart';
 import IndicatorsPanel from './IndicatorsPanel';
 import TradingSuggestions from './TradingSuggestions';
-import MultiTimeframePanel from './MultiTimeframePanel';
+
 import { API_URL } from '../config/api';
 
 const timeframes = [

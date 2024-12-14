@@ -6,20 +6,19 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
   Alert,
   CircularProgress,
   Grid,
   Card,
-  CardContent
+  CardContent,
+  ExpandMoreIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  ShowChartIcon,
+  TimelineIcon,
+  SpeedIcon,
+  BarChartIcon
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import SpeedIcon from '@mui/icons-material/Speed';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import { API_URL } from '../config/api';
 
 const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
