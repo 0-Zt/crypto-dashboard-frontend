@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Grid,
   Paper,
   Typography,
+  CircularProgress,
+  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
   Alert,
-  CircularProgress,
-  Grid,
-  Card,
-  CardContent,
-  ExpandMoreIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-  ShowChartIcon,
-  TimelineIcon,
-  SpeedIcon,
-  BarChartIcon
+  CardContent
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import SpeedIcon from '@mui/icons-material/Speed';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { API_URL } from '../config/api';
 
 const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
