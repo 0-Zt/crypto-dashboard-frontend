@@ -3,7 +3,7 @@ import { Box, Grid, Paper, FormControl, MenuItem, TextField, Autocomplete } from
 import TradingViewChart from './TradingViewChart';
 import IndicatorsPanel from './IndicatorsPanel';
 import TradingSuggestions from './TradingSuggestions';
-import MultiTimeframePanel from './MultiTimeFramePanel';
+import MultiTimeframepanel from './MultiTimeframepanel';
 import { fetchApi } from '../config/api';
 
 const timeframes = [
@@ -100,7 +100,7 @@ function Dashboard() {
 
       {/* Panel de múltiples timeframes abajo */}
       <Box sx={{ mt: 3 }}>
-        <MultiTimeframePanel symbol={symbol} />
+        <MultiTimeframepanel symbol={symbol} />
       </Box>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </Box>

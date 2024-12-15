@@ -4,7 +4,7 @@ import { API_URL } from '../config/api';
 
 const intervals = ['4h', '1d']; // Puedes agregar más
 
-function MultiTimeframePanel({ symbol }) {
+function MultiTimeframepanel({ symbol }) {
   const [data, setData] = useState({});
 
   useEffect(() => {
@@ -58,4 +58,4 @@ function MultiTimeframePanel({ symbol }) {
   );
 }
 
-export default MultiTimeframePanel;
+export default MultiTimeframepanel;
