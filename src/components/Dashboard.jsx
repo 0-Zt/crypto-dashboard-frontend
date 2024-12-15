@@ -7,10 +7,10 @@ import MultiTimeframepanel from './MultiTimeframepanel';
 import { fetchApi } from '../config/api';
 
 const timeframes = [
-  { value: '1m', label: '1 minuto' },
-  { value: '5m', label: '5 minutos' },
-  { value: '15m', label: '15 minutos' },
-  { value: '30m', label: '30 minutos' },
+  { value: '1', label: '1 minuto' },
+  { value: '5', label: '5 minutos' },
+  { value: '15', label: '15 minutos' },
+  { value: '30', label: '30 minutos' },
   { value: '1h', label: '1 hora' },
   { value: '4h', label: '4 horas' },
   { value: '1d', label: '1 día' },
