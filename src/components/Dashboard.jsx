@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, FormControl, MenuItem, TextField } from '@mui/material';
-import { Autocomplete } from '@mui/material';
+import { Box, Grid, Paper, FormControl, MenuItem, TextField, Autocomplete } from '@mui/material';
 import TradingViewChart from './TradingViewChart';
 import IndicatorsPanel from './IndicatorsPanel';
 import TradingSuggestions from './TradingSuggestions';
-
-import { API_URL } from '../config/api';
+import MultiTimeframePanel from './MultiTimeFramePanel';
+import { fetchApi } from '../config/api';
 
 const timeframes = [
   { value: '1m', label: '1 minuto' },
@@ -18,18 +17,28 @@ const timeframes = [
 ];
 
 function Dashboard() {
-  const [symbol, setSymbol] = useState('');
+  const [symbol, setSymbol] = useState('BTCUSDT'); 
   const [symbols, setSymbols] = useState([]);
   const [timeframe, setTimeframe] = useState('1h');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/symbols`)
-      .then(res => res.json())
-      .then(data => {
+    const loadSymbols = async () => {
+      try {
+        const data = await fetchApi('/api/symbols');
         setSymbols(data.symbols);
-      })
-      .catch(err => console.error(err));
-  }, []);
+        if (!symbol && data.symbols.length > 0) {
+          const btc = data.symbols.find(s => s.symbol === 'BTCUSDT');
+          if (btc) setSymbol('BTCUSDT');
+        }
+      } catch (err) {
+        console.error('Error loading symbols:', err);
+        setError('Error al cargar los símbolos. Por favor, intenta recargar la página.');
+      }
+    };
+
+    loadSymbols();
+  }, [symbol]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -93,6 +102,7 @@ function Dashboard() {
       <Box sx={{ mt: 3 }}>
         <MultiTimeframePanel symbol={symbol} />
       </Box>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </Box>
   );
 }

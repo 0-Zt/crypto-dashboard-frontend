@@ -10,7 +10,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Alert,
-  CardContent
+  CardContent,
+  Card
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';

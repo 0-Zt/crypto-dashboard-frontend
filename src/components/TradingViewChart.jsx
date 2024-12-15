@@ -16,6 +16,8 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
   const [rsiLength, setRsiLength] = React.useState(14);
 
   useEffect(() => {
+    if (!symbol) return; // No crear el widget si no hay símbolo
+
     const currentContainer = container.current;
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/tv.js';
