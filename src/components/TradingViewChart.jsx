@@ -42,25 +42,40 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
           indicators.ema21 && { id: 'MAExp@tv-basicstudies', label: 'EMA 21', inputs: { length: 21 } },
           indicators.ema50 && { id: 'MAExp@tv-basicstudies', label: 'EMA 50', inputs: { length: 50 } },
           indicators.ema200 && { id: 'MAExp@tv-basicstudies', label: 'EMA 200', inputs: { length: 200 } },
-          indicators.bollinger && 'BB@tv-basicstudies',
-          indicators.rsi && 'RSI@tv-basicstudies',
-          indicators.macd && 'MACD@tv-basicstudies',
-          indicators.adx && 'ADX@tv-basicstudies',
+          indicators.bollinger && { id: 'BB@tv-basicstudies', label: 'Bollinger Bands' },
+          indicators.rsi && { id: 'RSI@tv-basicstudies', label: 'RSI', inputs: { length: rsiLength } },
+          indicators.macd && { id: 'MACD@tv-basicstudies', label: 'MACD' },
+          indicators.adx && { id: 'ADX@tv-basicstudies', label: 'ADX' },
         ].filter(Boolean),
         onChartReady: () => {
-          // Configurar colores y estilos para las EMAs
+          // Configurar colores y estilos para las EMAs y otros indicadores
           const overrides = {
+            // EMAs
             "MAExp@tv-basicstudies.0.plottype": "line",
             "MAExp@tv-basicstudies.0.color": "#00FF00",  // Verde para EMA 21
             "MAExp@tv-basicstudies.1.plottype": "line",
             "MAExp@tv-basicstudies.1.color": "#FFD700",  // Dorado para EMA 50
             "MAExp@tv-basicstudies.2.plottype": "line",
             "MAExp@tv-basicstudies.2.color": "#FF0000",  // Rojo para EMA 200
+            
+            // Bollinger Bands
+            "BB@tv-basicstudies.upperBandColor": "#2962FF",
+            "BB@tv-basicstudies.lowerBandColor": "#2962FF",
+            "BB@tv-basicstudies.middleBandColor": "#7B1FA2",
+            
+            // RSI
+            "RSI@tv-basicstudies.length": rsiLength,
+            "RSI@tv-basicstudies.upperLimit": 70,
+            "RSI@tv-basicstudies.lowerLimit": 30,
+            
+            // MACD
+            "MACD@tv-basicstudies.fast_length": 12,
+            "MACD@tv-basicstudies.slow_length": 26,
+            "MACD@tv-basicstudies.signal_length": 9,
+            
+            // ADX
+            "ADX@tv-basicstudies.length": 14
           };
-
-          if (indicators.rsi) {
-            overrides["RSI@tv-basicstudies.length"] = rsiLength;
-          }
 
           widget.applyStudiesOverrides(overrides);
         }
