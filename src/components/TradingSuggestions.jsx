@@ -79,46 +79,53 @@ function TradingSuggestions({ symbol, timeframe }) {
       <Typography variant="h6" gutterBottom>
         Sugerencias de Trading
       </Typography>
-      <Card sx={{ mb: 2 }}>
+      <Card 
+        sx={{ 
+          mb: 2,
+          bgcolor: suggestion.type === 'LONG' ? 'success.dark' : 'error.dark',
+          color: 'white'
+        }}
+      >
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Sugerencia de Trading
-          </Typography>
-
           <Box sx={{ mt: 2 }}>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <Typography variant="subtitle1">
+              <Typography variant="subtitle1" sx={{ color: 'white' }}>
                 Tipo de Operación:
               </Typography>
               <Chip
                 icon={suggestion.type === 'LONG' ? <TrendingUpIcon /> : <TrendingDownIcon />}
                 label={suggestion.type === 'LONG' ? 'COMPRA' : 'VENTA'}
                 color={suggestion.type === 'LONG' ? 'success' : 'error'}
+                sx={{ 
+                  bgcolor: suggestion.type === 'LONG' ? 'success.light' : 'error.light',
+                  '& .MuiChip-label': { color: 'white' },
+                  '& .MuiChip-icon': { color: 'white' }
+                }}
               />
             </Stack>
 
-            <Typography variant="body1" sx={{ mb: 1 }}>
+            <Typography variant="body1" sx={{ mb: 1, color: 'white' }}>
               Punto de Entrada: ${formatPrice(suggestion.entry)}
             </Typography>
 
-            <Typography variant="body1" sx={{ mb: 1 }}>
+            <Typography variant="body1" sx={{ mb: 1, color: 'white' }}>
               Stop Loss: ${formatPrice(suggestion.stopLoss)}
             </Typography>
 
-            <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+            <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, color: 'white' }}>
               Objetivos de Precio:
             </Typography>
             {suggestion.targets.map((target, index) => (
-              <Typography key={index} variant="body1" sx={{ ml: 2 }}>
+              <Typography key={index} variant="body1" sx={{ ml: 2, color: 'white' }}>
                 Target {index + 1}: ${formatPrice(target)}
               </Typography>
             ))}
 
             <Box sx={{ mt: 2 }}>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: 'white' }}>
                 Confianza: {suggestion.confidence}%
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: 'white' }}>
                 Riesgo: {suggestion.risk}
               </Typography>
             </Box>

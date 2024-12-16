@@ -51,7 +51,7 @@ function Dashboard() {
           onChange={(event, newValue) => {
             if (newValue) {
               setSymbol(newValue.symbol);
-            }
+            } 
           }}
           sx={{ width: 200 }}
           renderInput={(params) => (
