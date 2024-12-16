@@ -44,6 +44,12 @@ function TradingSuggestions({ symbol, timeframe }) {
     fetchSuggestion();
   }, [symbol, timeframe]);
 
+  const formatPrice = (price) => {
+    if (typeof price !== 'number') return 'N/A';
+    // Mostrar todos los decimales significativos, eliminar ceros finales
+    return price.toFixed(8).replace(/\.?0+$/, '');
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -60,8 +66,12 @@ function TradingSuggestions({ symbol, timeframe }) {
     );
   }
 
-  if (!suggestion) {
-    return null;
+  if (!suggestion || suggestion.type === 'NEUTRAL' || suggestion.type === 'ERROR') {
+    return (
+      <Alert severity="info" sx={{ mb: 2 }}>
+        {suggestion?.message || 'No hay sugerencias de trading disponibles en este momento.'}
+      </Alert>
+    );
   }
 
   return (
@@ -69,62 +79,52 @@ function TradingSuggestions({ symbol, timeframe }) {
       <Typography variant="h6" gutterBottom>
         Sugerencias de Trading
       </Typography>
-      
-      <Card sx={{ 
-        mb: 2, 
-        bgcolor: suggestion.type === 'LONG' ? 'success.dark' : 
-                 suggestion.type === 'SHORT' ? 'error.dark' : 
-                 'warning.dark'
-      }}>
+      <Card sx={{ mb: 2 }}>
         <CardContent>
-          {suggestion.type !== 'NEUTRAL' ? (
-            <>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                {suggestion.type === 'LONG' ? (
-                  <TrendingUpIcon color="success" />
-                ) : (
-                  <TrendingDownIcon color="error" />
-                )}
-                <Typography variant="h6">
-                  {suggestion.type === 'LONG' ? 'Posición Larga' : 'Posición Corta'}
-                </Typography>
-                <Chip
-                  label={`Confianza ${suggestion.confidence}%`}
-                  color={suggestion.confidence > 70 ? 'success' : 'warning'}
-                  size="small"
-                />
-                <Chip
-                  label={`Riesgo ${suggestion.risk}`}
-                  color={suggestion.risk === 'Alto' ? 'error' : 'warning'}
-                  size="small"
-                />
-              </Stack>
+          <Typography variant="h6" gutterBottom>
+            Sugerencia de Trading
+          </Typography>
 
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                Punto de Entrada: ${suggestion.entry.toFixed(8).replace(/\.?0+$/, '')}
+          <Box sx={{ mt: 2 }}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Typography variant="subtitle1">
+                Tipo de Operación:
               </Typography>
+              <Chip
+                icon={suggestion.type === 'LONG' ? <TrendingUpIcon /> : <TrendingDownIcon />}
+                label={suggestion.type === 'LONG' ? 'COMPRA' : 'VENTA'}
+                color={suggestion.type === 'LONG' ? 'success' : 'error'}
+              />
+            </Stack>
 
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                Stop Loss: ${suggestion.stopLoss.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-
-              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
-                Objetivos de Precio:
-              </Typography>
-              {suggestion.targets.map((target, index) => (
-                <Typography key={index} variant="body1" sx={{ ml: 2 }}>
-                  Target {index + 1}: ${target.toFixed(8).replace(/\.?0+$/, '')}
-                </Typography>
-              ))}
-            </>
-          ) : (
-            <Typography variant="body1">
-              {suggestion.message}
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Punto de Entrada: ${formatPrice(suggestion.entry)}
             </Typography>
-          )}
+
+            <Typography variant="body1" sx={{ mb: 1 }}>
+              Stop Loss: ${formatPrice(suggestion.stopLoss)}
+            </Typography>
+
+            <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+              Objetivos de Precio:
+            </Typography>
+            {suggestion.targets.map((target, index) => (
+              <Typography key={index} variant="body1" sx={{ ml: 2 }}>
+                Target {index + 1}: ${formatPrice(target)}
+              </Typography>
+            ))}
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1">
+                Confianza: {suggestion.confidence}%
+              </Typography>
+              <Typography variant="body1">
+                Riesgo: {suggestion.risk}
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
-      
       <Typography variant="caption" color="text.secondary">
         * Las sugerencias están basadas en análisis técnico y no garantizan resultados. Siempre realiza tu propio análisis antes de operar.
       </Typography>
