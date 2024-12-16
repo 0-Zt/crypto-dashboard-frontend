@@ -100,26 +100,20 @@ function TradingSuggestions({ symbol, timeframe }) {
                 />
               </Stack>
 
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Precio de Entrada
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                $ {suggestion.entry}
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                Punto de Entrada: ${suggestion.entry.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
 
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Stop Loss
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                $ {suggestion.stopLoss}
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                Stop Loss: ${suggestion.stopLoss.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
 
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Objetivos:
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Objetivos de Precio:
               </Typography>
               {suggestion.targets.map((target, index) => (
-                <Typography key={index} variant="body1">
-                  Target {index + 1}: $ {target}
+                <Typography key={index} variant="body1" sx={{ ml: 2 }}>
+                  Target {index + 1}: ${target.toFixed(8).replace(/\.?0+$/, '')}
                 </Typography>
               ))}
             </>

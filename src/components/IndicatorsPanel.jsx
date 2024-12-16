@@ -140,13 +140,13 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
           </Typography>
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Banda Superior: ${indicators.bollinger_bands.upper.toFixed(2)}
+              Banda Superior: ${indicators.bollinger_bands.upper.toFixed(8).replace(/\.?0+$/, '')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Banda Media: ${indicators.bollinger_bands.middle.toFixed(2)}
+              Banda Media: ${indicators.bollinger_bands.middle.toFixed(8).replace(/\.?0+$/, '')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Banda Inferior: ${indicators.bollinger_bands.lower.toFixed(2)}
+              Banda Inferior: ${indicators.bollinger_bands.lower.toFixed(8).replace(/\.?0+$/, '')}
             </Typography>
           </Box>
         </AccordionDetails>
@@ -188,16 +188,23 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
           <Card>
             <CardContent>
               <Typography variant="subtitle1" gutterBottom>
-                Medias Móviles Exponenciales
+                Precio Actual
+              </Typography>
+              <Typography variant="h6" color="primary">
+                ${analysis.price.value.toFixed(8).replace(/\.?0+$/, '')}
+              </Typography>
+
+              <Typography variant="subtitle1" sx={{ mt: 2 }} gutterBottom>
+                EMAs
               </Typography>
               <Typography variant="body2">
-                EMA 21: {indicators.ema.ema21.toFixed(2)}
+                EMA 21: ${indicators.ema.ema21.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
               <Typography variant="body2">
-                EMA 50: {indicators.ema.ema50.toFixed(2)}
+                EMA 50: ${indicators.ema.ema50.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
               <Typography variant="body2">
-                EMA 200: {indicators.ema.ema200.toFixed(2)}
+                EMA 200: ${indicators.ema.ema200.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
             </CardContent>
           </Card>
@@ -246,13 +253,13 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
                 Bandas de Bollinger
               </Typography>
               <Typography variant="body2">
-                Superior: {indicators.bollinger_bands.upper.toFixed(2)}
+                Superior: ${indicators.bollinger_bands.upper.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
               <Typography variant="body2">
-                Media: {indicators.bollinger_bands.middle.toFixed(2)}
+                Media: ${indicators.bollinger_bands.middle.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
               <Typography variant="body2">
-                Inferior: {indicators.bollinger_bands.lower.toFixed(2)}
+                Inferior: ${indicators.bollinger_bands.lower.toFixed(8).replace(/\.?0+$/, '')}
               </Typography>
             </CardContent>
           </Card>
