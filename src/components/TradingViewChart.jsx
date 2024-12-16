@@ -39,23 +39,23 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
         container_id: "tradingview_chart",
         hide_side_toolbar: false,
         studies: [
-          'MAExp@tv-basicstudies', // EMA 21, índice 0
-          'MAExp@tv-basicstudies', // EMA 50, índice 1
-          'MAExp@tv-basicstudies', // EMA 200, índice 2
+          indicators.ema21 && { id: 'MAExp@tv-basicstudies', label: 'EMA 21', inputs: { length: 21 } },
+          indicators.ema50 && { id: 'MAExp@tv-basicstudies', label: 'EMA 50', inputs: { length: 50 } },
+          indicators.ema200 && { id: 'MAExp@tv-basicstudies', label: 'EMA 200', inputs: { length: 200 } },
           indicators.bollinger && 'BB@tv-basicstudies',
           indicators.rsi && 'RSI@tv-basicstudies',
           indicators.macd && 'MACD@tv-basicstudies',
           indicators.adx && 'ADX@tv-basicstudies',
         ].filter(Boolean),
         onChartReady: () => {
-          // Aplicar overrides una vez que el chart está listo
+          // Configurar colores y estilos para las EMAs
           const overrides = {
-            "MAExp@tv-basicstudies.0.length": 21,
-            "MAExp@tv-basicstudies.1.length": 50,
-            "MAExp@tv-basicstudies.2.length": 200,
-            "MAExp@tv-basicstudies.0.visible": indicators.ema21,
-            "MAExp@tv-basicstudies.1.visible": indicators.ema50,
-            "MAExp@tv-basicstudies.2.visible": indicators.ema200,
+            "MAExp@tv-basicstudies.0.plottype": "line",
+            "MAExp@tv-basicstudies.0.color": "#00FF00",  // Verde para EMA 21
+            "MAExp@tv-basicstudies.1.plottype": "line",
+            "MAExp@tv-basicstudies.1.color": "#FFD700",  // Dorado para EMA 50
+            "MAExp@tv-basicstudies.2.plottype": "line",
+            "MAExp@tv-basicstudies.2.color": "#FF0000",  // Rojo para EMA 200
           };
 
           if (indicators.rsi) {

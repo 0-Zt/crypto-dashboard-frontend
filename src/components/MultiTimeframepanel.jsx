@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { API_URL } from '../config/api';
 
-const intervals = ['4h', '1d']; // Puedes agregar más
+// Keep using hour and day formats for multi-timeframe analysis
+const intervals = ['4h', '1d'];  // These timeframes work well for longer-term analysis
 
 function MultiTimeframepanel({ symbol }) {
   const [data, setData] = useState({});
