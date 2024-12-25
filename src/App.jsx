@@ -46,9 +46,9 @@ function App() {
                   </button>
                   <div className="flex items-center ml-4">
                     <LineChart className="h-6 w-6 text-indigo-500" />
-                    <span className="ml-2 text-lg font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+                    <h1 className="ml-2 text-lg font-semibold text-slate-200 md:bg-gradient-to-r md:from-indigo-400 md:to-purple-400 md:text-transparent md:bg-clip-text">
                       Crypto Analytics
-                    </span>
+                    </h1>
                   </div>
                 </div>
 
