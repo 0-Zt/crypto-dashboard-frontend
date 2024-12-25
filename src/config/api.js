@@ -14,7 +14,7 @@ const getApiUrl = () => {
   // If no environment variable is set, use the Railway deployment URL
   //https://localhost:8000
   //https://crypto-dashboard-backend-883w.onrender.com
-  const railwayUrl = 'http://localhost:8000';
+  const railwayUrl = 'https://crypto-dashboard-backend-883w.onrender.com';
   console.log('Using Render URL:', railwayUrl);
   return railwayUrl;
 };
