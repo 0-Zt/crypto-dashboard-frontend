@@ -1,43 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Grid,
-  Paper,
-  Typography,
   CircularProgress,
-  Chip,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Alert,
-  CardContent,
-  Card
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import SpeedIcon from '@mui/icons-material/Speed';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  LineChart,
+  BarChart2,
+  Activity,
+  Waves,
+  CandlestickChart,
+  DollarSign,
+  Timer,
+  Info
+} from 'lucide-react';
 import { API_URL } from '../config/api';
+import { Card } from './ui/card';
+import CandlePatternInfo from './CandlePatternInfo';
 
 const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [patternInfoOpen, setPatternInfoOpen] = useState(false);
+  const [selectedPattern, setSelectedPattern] = useState('');
 
   useEffect(() => {
     const fetchAnalysis = async () => {
       setLoading(true);
       try {
-        // URL completa al backend
         const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
         if (!response.ok) {
           throw new Error('Error al obtener el análisis');
         }
         const data = await response.json();
-        // Guardamos sólo el análisis interno
         setAnalysis(data.analysis);
         setError(null);
       } catch (err) {
@@ -54,7 +52,7 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+      <Box className="flex justify-center items-center p-6">
         <CircularProgress />
       </Box>
     );
@@ -62,7 +60,7 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 2 }}>
+      <Alert severity="error" className="m-4">
         {error}
       </Alert>
     );
@@ -73,19 +71,21 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
   const {
     trend,
     indicators,
-    analysis: detailAnalysis
+    analysis: detailAnalysis,
+    patterns,
+    price = {} // Valor por defecto para price
   } = analysis;
 
   const getTrendColor = (trend) => {
     switch (trend) {
       case 'STRONG_BULLISH':
       case 'BULLISH':
-        return 'success.main';
+        return 'text-emerald-500';
       case 'STRONG_BEARISH':
       case 'BEARISH':
-        return 'error.main';
+        return 'text-rose-500';
       default:
-        return 'warning.main';
+        return 'text-amber-500';
     }
   };
 
@@ -93,179 +93,262 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
     switch (trend) {
       case 'STRONG_BULLISH':
       case 'BULLISH':
-        return <TrendingUpIcon color="success" />;
+        return <TrendingUp className="w-5 h-5 text-emerald-500" />;
       case 'STRONG_BEARISH':
       case 'BEARISH':
-        return <TrendingDownIcon color="error" />;
+        return <TrendingDown className="w-5 h-5 text-rose-500" />;
       default:
-        return <ShowChartIcon color="warning" />;
+        return <LineChart className="w-5 h-5 text-amber-500" />;
     }
   };
 
+  // Valores por defecto para evitar errores
+  const priceValue = price?.value || 0;
+  const priceChange = price?.change24h || 0;
+
+  const handlePatternClick = (patternName) => {
+    setSelectedPattern(patternName);
+    setPatternInfoOpen(true);
+  };
+
   return (
-    <Box sx={{ width: '100%', p: 2 }}>
-      <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {getTrendIcon(trend)} Análisis de {symbol}
-        </Typography>
-        <Typography variant="body1" color={getTrendColor(trend)} sx={{ fontWeight: 'bold' }}>
-          Tendencia: {trend.replace('_', ' ')}
-        </Typography>
-      </Paper>
+    <div className="space-y-4">
+      {/* Encabezado */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <LineChart className="w-6 h-6 text-indigo-500" />
+          <h2 className="text-lg font-semibold text-slate-200">
+            Análisis de {symbol}
+          </h2>
+        </div>
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getTrendColor(trend)} bg-slate-800/50`}>
+          {getTrendIcon(trend)}
+          <span className="text-sm font-medium">{trend?.replace('_', ' ') || 'NEUTRAL'}</span>
+        </div>
+      </div>
 
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <TimelineIcon />
-            <Typography variant="subtitle1">Análisis de Tendencia</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="body1" paragraph>
-            {detailAnalysis.summary}
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+      {/* Precio y EMAs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <DollarSign className="w-5 h-5 text-indigo-500" />
+            <h3 className="font-medium text-slate-200">Precio Actual</h3>
+          </div>
+          <div className="text-2xl font-bold text-slate-200 mb-4">
+            ${priceValue.toFixed(2)}
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-400">Variación 24h</span>
+              <span className={priceChange >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
+                {priceChange > 0 ? '+' : ''}{priceChange.toFixed(2)}%
+              </span>
+            </div>
+          </div>
+        </Card>
 
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ShowChartIcon />
-            <Typography variant="subtitle1">Análisis de Bandas de Bollinger</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="body1">
-            {detailAnalysis.bollinger}
-          </Typography>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              Banda Superior: ${indicators.bollinger_bands.upper.toFixed(8).replace(/\.?0+$/, '')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Banda Media: ${indicators.bollinger_bands.middle.toFixed(8).replace(/\.?0+$/, '')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Banda Inferior: ${indicators.bollinger_bands.lower.toFixed(8).replace(/\.?0+$/, '')}
-            </Typography>
-          </Box>
-        </AccordionDetails>
-      </Accordion>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Timer className="w-5 h-5 text-indigo-500" />
+            <h3 className="font-medium text-slate-200">EMAs</h3>
+          </div>
+          <div className="space-y-2">
+            {indicators?.ema && (
+              <>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">EMA 21</span>
+                  <span className="text-slate-200">${indicators.ema.ema21?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">EMA 50</span>
+                  <span className="text-slate-200">${indicators.ema.ema50?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">EMA 200</span>
+                  <span className="text-slate-200">${indicators.ema.ema200?.toFixed(2) || '0.00'}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
+      </div>
 
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SpeedIcon />
-            <Typography variant="subtitle1">Análisis de RSI</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="body1" paragraph>
-            {detailAnalysis.rsi}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            RSI Actual: {indicators.rsi.value.toFixed(2)}
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+      {/* Indicadores */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* RSI */}
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-indigo-500" />
+              <h3 className="font-medium text-slate-200">RSI</h3>
+            </div>
+            <span className={`text-sm font-medium px-2.5 py-0.5 rounded-full 
+              ${indicators?.rsi?.value > 70 ? 'bg-rose-500/20 text-rose-500' : 
+                indicators?.rsi?.value < 30 ? 'bg-emerald-500/20 text-emerald-500' : 
+                'bg-slate-700/50 text-slate-300'}`}>
+              {indicators?.rsi?.value?.toFixed(2) || '0.00'}
+            </span>
+          </div>
+          <p className="text-sm text-slate-400">{detailAnalysis?.rsi || 'Sin datos'}</p>
+          <div className="mt-2 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Estado</span>
+              <span className={`${
+                indicators?.rsi?.value > 70 ? 'text-rose-500' : 
+                indicators?.rsi?.value < 30 ? 'text-emerald-500' : 
+                'text-slate-400'
+              }`}>
+                {indicators?.rsi?.value > 70 ? 'Sobrecomprado' :
+                 indicators?.rsi?.value < 30 ? 'Sobrevendido' : 'Neutral'}
+              </span>
+            </div>
+          </div>
+        </Card>
 
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <BarChartIcon />
-            <Typography variant="subtitle1">MACD</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="body1" paragraph>
-            {detailAnalysis.macd}
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+        {/* MACD */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart2 className="w-5 h-5 text-indigo-500" />
+            <h3 className="font-medium text-slate-200">MACD</h3>
+          </div>
+          <div className="space-y-2 text-sm">
+            {indicators?.macd && (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">MACD</span>
+                  <span className={`${indicators.macd.macd >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {indicators.macd.macd?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Señal</span>
+                  <span className="text-slate-200">{indicators.macd.signal?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Histograma</span>
+                  <span className={`${indicators.macd.histogram >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    {indicators.macd.histogram?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="mt-3 text-sm text-slate-400">{detailAnalysis?.macd || 'Sin datos'}</p>
+        </Card>
 
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                Precio Actual
-              </Typography>
-              <Typography variant="h6" color="primary">
-                ${analysis.price.value.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
+        {/* Bollinger Bands */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Waves className="w-5 h-5 text-indigo-500" />
+            <h3 className="font-medium text-slate-200">Bandas de Bollinger</h3>
+          </div>
+          <div className="space-y-2 text-sm">
+            {indicators?.bollinger_bands && (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Superior</span>
+                  <span className="text-slate-200">${indicators.bollinger_bands.upper?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Media</span>
+                  <span className="text-slate-200">${indicators.bollinger_bands.middle?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Inferior</span>
+                  <span className="text-slate-200">${indicators.bollinger_bands.lower?.toFixed(2) || '0.00'}</span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="mt-3 text-sm text-slate-400">{detailAnalysis?.bollinger || 'Sin datos'}</p>
+        </Card>
 
-              <Typography variant="subtitle1" sx={{ mt: 2 }} gutterBottom>
-                EMAs
-              </Typography>
-              <Typography variant="body2">
-                EMA 21: ${indicators.ema.ema21.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-              <Typography variant="body2">
-                EMA 50: ${indicators.ema.ema50.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-              <Typography variant="body2">
-                EMA 200: ${indicators.ema.ema200.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-            </CardContent>
+        {/* Análisis de Tendencia */}
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-5 h-5 text-indigo-500" />
+            <h3 className="font-medium text-slate-200">Análisis de Tendencia</h3>
+          </div>
+          <p className="text-sm text-slate-400">{detailAnalysis?.summary || 'Sin datos'}</p>
+          {indicators?.lastCandle && (
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Última Vela</span>
+                <span className={`${indicators.lastCandle.bullish ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {indicators.lastCandle.bullish ? 'Alcista' : 'Bajista'}
+                </span>
+              </div>
+              {indicators.lastCandle.pattern && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">Patrón</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs
+                      ${indicators.lastCandle.pattern.bullish ? 'bg-emerald-500/20 text-emerald-500' : 
+                        indicators.lastCandle.pattern.bearish ? 'bg-rose-500/20 text-rose-500' : 
+                        'bg-amber-500/20 text-amber-500'}`}>
+                      {indicators.lastCandle.pattern.name || 'Sin patrón'}
+                    </span>
+                    {indicators.lastCandle.pattern.name && (
+                      <button
+                        onClick={() => handlePatternClick(indicators.lastCandle.pattern.name)}
+                        className="p-1 hover:bg-slate-800 rounded-full transition-colors"
+                      >
+                        <Info className="w-4 h-4 text-slate-400" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Apertura</span>
+                <span className="text-slate-200">${indicators.lastCandle.open?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Cierre</span>
+                <span className="text-slate-200">${indicators.lastCandle.close?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Máximo</span>
+                <span className="text-slate-200">${indicators.lastCandle.high?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Mínimo</span>
+                <span className="text-slate-200">${indicators.lastCandle.low?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Volumen</span>
+                <span className="text-slate-200">{indicators.lastCandle.volume?.toLocaleString() || '0'}</span>
+              </div>
+              {indicators.lastCandle.pattern?.description && (
+                <div className="mt-2 text-sm text-slate-400">
+                  {indicators.lastCandle.pattern.description}
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+
+        {/* Patrones */}
+        {patterns && patterns.length > 0 && (
+          <Card className="p-4 col-span-full">
+            <div className="flex items-center gap-2 mb-3">
+              <CandlestickChart className="w-5 h-5 text-indigo-500" />
+              <h3 className="font-medium text-slate-200">Patrones Detectados</h3>
+            </div>
+            <ul className="space-y-1">
+              {patterns.map((pattern, idx) => (
+                <li key={idx} className="text-sm text-slate-400">• {pattern}</li>
+              ))}
+            </ul>
           </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                RSI
-              </Typography>
-              <Typography variant="body2">
-                Valor: {indicators.rsi.value.toFixed(2)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {indicators.rsi.value > 70 ? 'Sobrecomprado' :
-                 indicators.rsi.value < 30 ? 'Sobrevendido' : 'Neutral'}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                MACD
-              </Typography>
-              <Typography variant="body2">
-                MACD: {indicators.macd.macd.toFixed(2)}
-              </Typography>
-              <Typography variant="body2">
-                Señal: {indicators.macd.signal.toFixed(2)}
-              </Typography>
-              <Typography variant="body2">
-                Histograma: {indicators.macd.histogram.toFixed(2)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                Bandas de Bollinger
-              </Typography>
-              <Typography variant="body2">
-                Superior: ${indicators.bollinger_bands.upper.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-              <Typography variant="body2">
-                Media: ${indicators.bollinger_bands.middle.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-              <Typography variant="body2">
-                Inferior: ${indicators.bollinger_bands.lower.toFixed(8).replace(/\.?0+$/, '')}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+        )}
+      </div>
+      <CandlePatternInfo
+        open={patternInfoOpen}
+        onClose={() => setPatternInfoOpen(false)}
+        patternName={selectedPattern}
+      />
+    </div>
   );
 };
 

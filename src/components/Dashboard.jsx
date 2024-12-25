@@ -42,8 +42,19 @@ function Dashboard() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      {/* Filtros arriba del contenido */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+      {/* Filtros con diseño mejorado */}
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 2, 
+        mb: 3,
+        '& .MuiOutlinedInput-root': {
+          backgroundColor: 'rgba(30, 41, 59, 0.5)',
+          borderRadius: '12px',
+          '&:hover': {
+            backgroundColor: 'rgba(30, 41, 59, 0.7)',
+          },
+        },
+      }}>
         <Autocomplete
           options={symbols}
           getOptionLabel={(s) => `${s.baseAsset}/${s.quoteAsset}`}
@@ -55,7 +66,12 @@ function Dashboard() {
           }}
           sx={{ width: 200 }}
           renderInput={(params) => (
-            <TextField {...params} label="Par de trading" variant="outlined" size="small" />
+            <TextField 
+              {...params} 
+              label="Par de trading" 
+              variant="outlined" 
+              size="small"
+            />
           )}
         />
         <FormControl sx={{ minWidth: 120 }}>
@@ -77,20 +93,66 @@ function Dashboard() {
       </Box>
 
       <Grid container spacing={3}>
+        {/* Gráfico principal con altura ajustada */}
         <Grid item xs={12} lg={8}>
-          <Paper sx={{ p: 2, height: '600px' }}>
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 2, 
+              height: '700px',
+              backgroundColor: 'rgba(30, 41, 59, 0.5)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              border: '1px solid rgba(148, 163, 184, 0.1)',
+              '&:hover': {
+                border: '1px solid rgba(148, 163, 184, 0.2)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
             <TradingViewChart symbol={symbol} timeframe={timeframe} />
           </Paper>
         </Grid>
+
+        {/* Panel de indicadores y sugerencias */}
         <Grid item xs={12} lg={4}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
+              <Paper 
+                elevation={0}
+                sx={{ 
+                  p: 3,
+                  backgroundColor: 'rgba(30, 41, 59, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(148, 163, 184, 0.1)',
+                  '&:hover': {
+                    border: '1px solid rgba(148, 163, 184, 0.2)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
                 <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
               </Paper>
             </Grid>
             <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
+              <Paper 
+                elevation={0}
+                sx={{ 
+                  p: 3,
+                  backgroundColor: 'rgba(30, 41, 59, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(148, 163, 184, 0.1)',
+                  '&:hover': {
+                    border: '1px solid rgba(148, 163, 184, 0.2)',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
                 <TradingSuggestions symbol={symbol} timeframe={timeframe} />
               </Paper>
             </Grid>
@@ -98,11 +160,38 @@ function Dashboard() {
         </Grid>
       </Grid>
 
-      {/* Panel de múltiples timeframes abajo */}
+      {/* Panel de múltiples timeframes */}
       <Box sx={{ mt: 3 }}>
-        <MultiTimeframepanel symbol={symbol} />
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 3,
+            backgroundColor: 'rgba(30, 41, 59, 0.5)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(148, 163, 184, 0.1)',
+            '&:hover': {
+              border: '1px solid rgba(148, 163, 184, 0.2)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            },
+            transition: 'all 0.3s ease',
+          }}
+        >
+          <MultiTimeframepanel symbol={symbol} />
+        </Paper>
       </Box>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <Box sx={{ 
+          mt: 2, 
+          p: 2, 
+          borderRadius: '12px', 
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          color: '#ef4444',
+          border: '1px solid rgba(239, 68, 68, 0.2)'
+        }}>
+          {error}
+        </Box>
+      )}
     </Box>
   );
 }

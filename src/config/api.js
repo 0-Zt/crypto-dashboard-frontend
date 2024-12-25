@@ -5,8 +5,8 @@ const getApiUrl = () => {
     console.log('Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
-  const envVite = import.meta?.env;
-  if (envVite?.VITE_API_URL) {
+  const envVite = import.meta.env;
+  if (envVite && envVite.VITE_API_URL) {
     console.log('Using VITE_API_URL:', envVite.VITE_API_URL);
     return envVite.VITE_API_URL;
   }

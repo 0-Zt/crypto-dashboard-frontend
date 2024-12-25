@@ -1,105 +1,129 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, useMediaQuery } from '@mui/material';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Box, Toolbar, Typography, IconButton, AppBar, Drawer } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import InfoIcon from '@mui/icons-material/Info';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { 
+  LayoutDashboard, 
+  LineChart, 
+  Settings, 
+  Bell,
+  Search,
+  Menu as MenuIcon,
+  HelpCircle
+} from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import InfoDialog from './components/InfoDialog';
 
-const drawerWidth = 240;
-
-const theme = createTheme({
+const darkTheme = createTheme({
   palette: {
     mode: 'dark',
-    primary: { main: '#1976d2' },
-    secondary: { main: '#f50057' },
     background: {
-      default: '#0a1929', 
-      paper: '#132f4c',
+      default: '#0B1120',
+      paper: 'rgba(17, 24, 39, 0.7)',
     },
-    text: { primary: '#ffffff' }
   },
-  typography: { fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif' },
 });
 
 function App() {
-  const [infoOpen, setInfoOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
-        <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', flexDirection: 'column' }}>
-          <AppBar position="static">
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <IconButton color="inherit" onClick={() => setDrawerOpen(!drawerOpen)}>
-                  <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" component="div">
-                🚀 Crypto Dashboard Relax
-                </Typography>
-              </Box>
-              <Box>
-                <IconButton color="inherit" onClick={() => setInfoOpen(true)}>
-                  <InfoIcon />
-                </IconButton>
-              </Box>
-            </Toolbar>
-          </AppBar>
+        <div className="min-h-screen bg-gradient-to-br from-[#0B1120] via-[#1E1B4B] to-[#0B1120]">
+          {/* Navbar */}
+          <nav className="fixed top-0 z-50 w-full border-b border-slate-800/20 bg-slate-900/80 backdrop-blur-xl">
+            <div className="px-4 mx-auto">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
+                  >
+                    <MenuIcon className="h-5 w-5" />
+                  </button>
+                  <div className="flex items-center ml-4">
+                    <LineChart className="h-6 w-6 text-indigo-500" />
+                    <span className="ml-2 text-lg font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text">
+                      Crypto Analytics
+                    </span>
+                  </div>
+                </div>
 
-          <Drawer
-            variant={isMobile ? "temporary" : "persistent"}
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            sx={{
-              width: drawerWidth,
-              flexShrink: 0,
-              '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', backgroundColor: '#10243E' },
-            }}
-          >
-            <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="h6" noWrap component="div">
-                Crypto Dashboard
-              </Typography>
-              <IconButton onClick={() => setDrawerOpen(false)} color="inherit">
-                <ChevronLeftIcon />
-              </IconButton>
-            </Toolbar>
-            <Box sx={{ overflow: 'auto', p: 2 }}>
-              <Typography variant="body2">Navegación futura aquí</Typography>
-              {/* Aquí puedes agregar elementos del menú o links */}
-            </Box>
-          </Drawer>
+                <div className="flex items-center gap-4">
+                  <div className="relative hidden md:block">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Search className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="text"
+                      className="w-64 pl-10 pr-4 py-1.5 text-sm text-slate-200 bg-slate-800/50 border border-slate-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50"
+                      placeholder="Search markets..."
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={() => setInfoDialogOpen(true)}
+                    className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
+                    title="Información de Indicadores"
+                  >
+                    <HelpCircle className="h-5 w-5" />
+                  </button>
+                  
+                  <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors relative">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-indigo-500 rounded-full"></span>
+                  </button>
+                  
+                  <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors">
+                    <Settings className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </nav>
 
-          <InfoDialog open={infoOpen} onClose={() => setInfoOpen(false)} />
+          {/* Sidebar */}
+          <aside className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} bg-slate-900/80 border-r border-slate-800/20 backdrop-blur-xl`}>
+            <div className="h-full px-4 py-4 overflow-y-auto">
+              <ul className="space-y-2">
+                <li>
+                  <button
+                    onClick={() => {/* Implementar navegación al dashboard */}}
+                    className="flex w-full items-center p-3 text-slate-200 rounded-lg hover:bg-slate-800/50 group transition-colors"
+                  >
+                    <LayoutDashboard className="h-5 w-5 text-indigo-500" />
+                    <span className="ml-3 font-medium">Dashboard</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {/* Implementar navegación a mercados */}}
+                    className="flex w-full items-center p-3 text-slate-400 rounded-lg hover:bg-slate-800/50 group transition-colors"
+                  >
+                    <LineChart className="h-5 w-5" />
+                    <span className="ml-3">Markets</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </aside>
 
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              p: 2,
-              overflowY: 'auto', // Habilitar scroll vertical
-              transition: (theme) => theme.transitions.create('margin', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              ...( !isMobile && drawerOpen && {
-                marginLeft: `${drawerWidth}px`,
-                transition: (theme) => theme.transitions.create('margin', {
-                  easing: theme.transitions.easing.easeOut,
-                  duration: theme.transitions.duration.enteringScreen,
-                }),
-              })
-            }}
-          >
-            <Dashboard />
-          </Box>
-        </Box>
+          {/* Main content */}
+          <main className={`pt-20 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''}`}>
+            <div className="p-4">
+              <Dashboard />
+            </div>
+          </main>
+
+          {/* Info Dialog */}
+          <InfoDialog open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} />
+        </div>
+        <footer className="fixed bottom-0 w-full py-2 text-center text-sm text-slate-400 bg-slate-900/50 backdrop-blur-sm border-t border-slate-800/50">
+          Made with 💜 by 0-Zxt
+        </footer>
       </Router>
     </ThemeProvider>
   );
