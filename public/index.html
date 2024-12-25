@@ -11,10 +11,34 @@
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Optimizar la carga de fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Precargar las fuentes críticas -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    
+    <!-- Cargar las fuentes de manera asíncrona -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    
+    <!-- Fallback para navegadores que no soportan onload -->
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      />
+    </noscript>
+    
     <title>Crypto Analytics | Advanced Trading Analysis</title>
   </head>
   <body>
