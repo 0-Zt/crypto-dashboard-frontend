@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Typography,
   CircularProgress,
   Alert,
 } from '@mui/material';
@@ -19,6 +20,7 @@ import {
 import { API_URL } from '../config/api';
 import { Card } from './ui/card';
 import CandlePatternInfo from './CandlePatternInfo';
+import { getAnalysisTimeframe } from '../utils/timeframeUtils';
 
 const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
   const [analysis, setAnalysis] = useState(null);
@@ -31,7 +33,8 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
     const fetchAnalysis = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
+        const analysisTimeframe = getAnalysisTimeframe(timeframe);
+        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${analysisTimeframe}`);
         if (!response.ok) {
           throw new Error('Error al obtener el análisis');
         }
@@ -337,7 +340,18 @@ const IndicatorsPanel = ({ symbol, timeframe = '1h' }) => {
             </div>
             <ul className="space-y-1">
               {patterns.map((pattern, idx) => (
-                <li key={idx} className="text-sm text-slate-400">• {pattern}</li>
+                <li 
+                  key={idx} 
+                  className="text-sm text-slate-400 flex items-center gap-2 cursor-pointer hover:text-slate-200"
+                  onClick={() => {
+                    setSelectedPattern(pattern);
+                    setPatternInfoOpen(true);
+                  }}
+                >
+                  <span>•</span>
+                  <span>{pattern}</span>
+                  <Info className="w-4 h-4 text-indigo-500" />
+                </li>
               ))}
             </ul>
           </Card>

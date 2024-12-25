@@ -1,228 +1,437 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, FormGroup, FormControlLabel, Checkbox, TextField, Tooltip } from '@mui/material';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { createChart } from 'lightweight-charts';
+import { Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import { getBinanceTimeframe } from '../utils/timeframeUtils';
 
 const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
-  const container = useRef();
-  const [indicators, setIndicators] = React.useState({
+  const chartContainerRef = useRef(null);
+  const chartRef = useRef(null);
+  const candleSeriesRef = useRef(null);
+  const volumeSeriesRef = useRef(null);
+  const indicatorSeriesRef = useRef({});
+  const resizeObserver = useRef(null);
+  const [indicators, setIndicators] = useState({
     ema21: true,
-    ema50: true,
+    ema50: false,
     ema200: true,
+    volume: false,
     bollinger: false,
     rsi: false,
     macd: false,
-    adx: false,
   });
 
-  const [rsiLength, setRsiLength] = React.useState(14);
+  const calculateEMA = useCallback((data, period) => {
+    const k = 2 / (period + 1);
+    let ema = data[0].close;
+    return data.map(item => {
+      ema = (item.close - ema) * k + ema;
+      return {
+        time: item.time,
+        value: ema,
+      };
+    });
+  }, []);
 
-  useEffect(() => {
-    if (!symbol) return; // No crear el widget si no hay símbolo
+  const calculateBollingerBands = useCallback((data, period = 20, stdDev = 2) => {
+    const sma = data.map((_, index, array) => {
+      if (index < period - 1) return null;
+      const slice = array.slice(index - period + 1, index + 1);
+      const sum = slice.reduce((acc, val) => acc + val.close, 0);
+      return sum / period;
+    });
 
-    const currentContainer = container.current;
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.onload = () => {
-      let widget = new window.TradingView.widget({
-        width: '100%',
-        height: 600,
-        symbol: `BINANCE:${symbol}`,
-        interval: timeframe.toUpperCase(),
-        timezone: "Etc/UTC",
-        theme: "dark",
-        style: "1",
-        locale: "es",
-        toolbar_bg: "#f1f3f6",
-        enable_publishing: false,
-        allow_symbol_change: true,
-        save_image: false,
-        container_id: "tradingview_chart",
-        hide_side_toolbar: false,
-        studies: [
-          indicators.ema21 && { id: 'MAExp@tv-basicstudies', label: 'EMA 21', inputs: { length: 21 } },
-          indicators.ema50 && { id: 'MAExp@tv-basicstudies', label: 'EMA 50', inputs: { length: 50 } },
-          indicators.ema200 && { id: 'MAExp@tv-basicstudies', label: 'EMA 200', inputs: { length: 200 } },
-          indicators.bollinger && { id: 'BB@tv-basicstudies', label: 'Bollinger Bands' },
-          indicators.rsi && { id: 'RSI@tv-basicstudies', label: 'RSI', inputs: { length: rsiLength } },
-          indicators.macd && { id: 'MACD@tv-basicstudies', label: 'MACD' },
-          indicators.adx && { id: 'ADX@tv-basicstudies', label: 'ADX' },
-        ].filter(Boolean),
-        onChartReady: () => {
-          // Configurar colores y estilos para las EMAs y otros indicadores
-          const overrides = {
-            // EMAs
-            "MAExp@tv-basicstudies.0.plottype": "line",
-            "MAExp@tv-basicstudies.0.color": "#00FF00",  // Verde para EMA 21
-            "MAExp@tv-basicstudies.1.plottype": "line",
-            "MAExp@tv-basicstudies.1.color": "#FFD700",  // Dorado para EMA 50
-            "MAExp@tv-basicstudies.2.plottype": "line",
-            "MAExp@tv-basicstudies.2.color": "#FF0000",  // Rojo para EMA 200
-            
-            // Bollinger Bands
-            "BB@tv-basicstudies.upperBandColor": "#2962FF",
-            "BB@tv-basicstudies.lowerBandColor": "#2962FF",
-            "BB@tv-basicstudies.middleBandColor": "#7B1FA2",
-            
-            // RSI
-            "RSI@tv-basicstudies.length": rsiLength,
-            "RSI@tv-basicstudies.upperLimit": 70,
-            "RSI@tv-basicstudies.lowerLimit": 30,
-            
-            // MACD
-            "MACD@tv-basicstudies.fast_length": 12,
-            "MACD@tv-basicstudies.slow_length": 26,
-            "MACD@tv-basicstudies.signal_length": 9,
-            
-            // ADX
-            "ADX@tv-basicstudies.length": 14
-          };
+    const bands = sma.map((mean, index) => {
+      if (mean === null) return null;
+      const slice = data.slice(index - period + 1, index + 1);
+      const squaredDiffs = slice.map(item => Math.pow(item.close - mean, 2));
+      const variance = squaredDiffs.reduce((acc, val) => acc + val, 0) / period;
+      const std = Math.sqrt(variance);
+      return {
+        time: data[index].time,
+        upper: mean + stdDev * std,
+        middle: mean,
+        lower: mean - stdDev * std,
+      };
+    }).filter(item => item !== null);
 
-          widget.applyStudiesOverrides(overrides);
-        }
-      });
-    };
+    return bands;
+  }, []);
 
-    if (currentContainer) {
-      currentContainer.innerHTML = '<div id="tradingview_chart"></div>';
-      document.head.appendChild(script);
+  const calculateRSI = useCallback((data, period = 14) => {
+    let gains = [];
+    let losses = [];
+    let rsi = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const difference = data[i].close - data[i - 1].close;
+      gains.push(difference > 0 ? difference : 0);
+      losses.push(difference < 0 ? -difference : 0);
     }
 
-    return () => {
-      if (currentContainer) {
-        currentContainer.innerHTML = '';
+    for (let i = period; i < data.length; i++) {
+      const avgGain = gains.slice(i - period, i).reduce((a, b) => a + b) / period;
+      const avgLoss = losses.slice(i - period, i).reduce((a, b) => a + b) / period;
+      const rs = avgGain / avgLoss;
+      rsi.push({
+        time: data[i].time,
+        value: 100 - (100 / (1 + rs))
+      });
+    }
+
+    return rsi;
+  }, []);
+
+  const calculateMACD = useCallback((data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) => {
+    const fastEMA = calculateEMA(data, fastPeriod);
+    const slowEMA = calculateEMA(data, slowPeriod);
+    
+    const macdLine = fastEMA.map((item, i) => ({
+      time: item.time,
+      value: item.value - slowEMA[i].value
+    }));
+
+    const signalLine = calculateEMA(macdLine, signalPeriod);
+    
+    return {
+      macdLine,
+      signalLine,
+      histogram: macdLine.map((item, i) => ({
+        time: item.time,
+        value: item.value - signalLine[i].value
+      }))
+    };
+  }, [calculateEMA]);
+
+  const clearChart = useCallback(() => {
+    if (chartRef.current) {
+      Object.values(indicatorSeriesRef.current).forEach(series => {
+        if (Array.isArray(series)) {
+          series.forEach(s => chartRef.current.removeSeries(s));
+        } else {
+          chartRef.current.removeSeries(series);
+        }
+      });
+      indicatorSeriesRef.current = {};
+
+      if (volumeSeriesRef.current) {
+        chartRef.current.removeSeries(volumeSeriesRef.current);
+        volumeSeriesRef.current = null;
       }
-      const oldScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]');
-      if (oldScript) {
-        oldScript.remove();
+
+      if (candleSeriesRef.current) {
+        chartRef.current.removeSeries(candleSeriesRef.current);
+        candleSeriesRef.current = null;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
+
+    const chart = createChart(chartContainerRef.current, {
+      width: chartContainerRef.current.clientWidth,
+      height: 600,
+      layout: {
+        background: { color: '#0B1120' },
+        textColor: '#DDD',
+      },
+      grid: {
+        vertLines: { color: '#1E2B4B' },
+        horzLines: { color: '#1E2B4B' },
+      },
+      crosshair: {
+        mode: 0,
+      },
+      timeScale: {
+        borderColor: '#1E2B4B',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      rightPriceScale: {
+        borderColor: '#1E2B4B',
+      },
+    });
+
+    chartRef.current = chart;
+    
+    const candleSeries = chart.addCandlestickSeries({
+      upColor: '#4CAF50',
+      downColor: '#FF5252',
+      borderDownColor: '#FF5252',
+      borderUpColor: '#4CAF50',
+      wickDownColor: '#FF5252',
+      wickUpColor: '#4CAF50',
+    });
+
+    candleSeriesRef.current = candleSeries;
+
+    const fetchData = async () => {
+      try {
+        clearChart();
+        const binanceTimeframe = getBinanceTimeframe(timeframe);
+        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${binanceTimeframe}&limit=1000`);
+        if (!response.ok) {
+          throw new Error('Error fetching data from Binance');
+        }
+        const data = await response.json();
+        
+        const candleData = data.map(d => ({
+          time: d[0] / 1000,
+          open: parseFloat(d[1]),
+          high: parseFloat(d[2]),
+          low: parseFloat(d[3]),
+          close: parseFloat(d[4]),
+          volume: parseFloat(d[5])
+        }));
+
+        candleSeriesRef.current = chartRef.current.addCandlestickSeries({
+          upColor: '#4CAF50',
+          downColor: '#FF5252',
+          borderDownColor: '#FF5252',
+          borderUpColor: '#4CAF50',
+          wickDownColor: '#FF5252',
+          wickUpColor: '#4CAF50',
+        });
+        candleSeriesRef.current.setData(candleData);
+
+        if (indicators.volume) {
+          volumeSeriesRef.current = chartRef.current.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: {
+              type: 'volume',
+            },
+            priceScaleId: 'volume',
+            scaleMargins: {
+              top: 0.9,
+              bottom: 0,
+            },
+          });
+
+          const volumeData = candleData.map(d => ({
+            time: d.time,
+            value: d.volume,
+            color: d.close >= d.open ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+          }));
+
+          volumeSeriesRef.current.setData(volumeData);
+        }
+
+        if (indicators.ema21) {
+          const ema21Data = calculateEMA(candleData, 21);
+          const ema21Series = chartRef.current.addLineSeries({
+            color: '#FF9800',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+          });
+          ema21Series.setData(ema21Data);
+          indicatorSeriesRef.current.ema21 = ema21Series;
+        }
+
+        if (indicators.ema50) {
+          const ema50Data = calculateEMA(candleData, 50);
+          const ema50Series = chartRef.current.addLineSeries({
+            color: '#2196F3',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+          });
+          ema50Series.setData(ema50Data);
+          indicatorSeriesRef.current.ema50 = ema50Series;
+        }
+
+        if (indicators.ema200) {
+          const ema200Data = calculateEMA(candleData, 200);
+          const ema200Series = chartRef.current.addLineSeries({
+            color: '#E91E63',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+          });
+          ema200Series.setData(ema200Data);
+          indicatorSeriesRef.current.ema200 = ema200Series;
+        }
+
+        if (indicators.bollinger) {
+          const bollingerData = calculateBollingerBands(candleData);
+          
+          const upperSeries = chartRef.current.addLineSeries({
+            color: 'rgba(41, 98, 255, 0.3)',
+            lineWidth: 1,
+            priceLineVisible: false,
+          });
+          
+          const middleSeries = chartRef.current.addLineSeries({
+            color: 'rgba(123, 31, 162, 0.3)',
+            lineWidth: 1,
+            priceLineVisible: false,
+          });
+          
+          const lowerSeries = chartRef.current.addLineSeries({
+            color: 'rgba(41, 98, 255, 0.3)',
+            lineWidth: 1,
+            priceLineVisible: false,
+          });
+
+          upperSeries.setData(bollingerData.map(d => ({ time: d.time, value: d.upper })));
+          middleSeries.setData(bollingerData.map(d => ({ time: d.time, value: d.middle })));
+          lowerSeries.setData(bollingerData.map(d => ({ time: d.time, value: d.lower })));
+          
+          indicatorSeriesRef.current.bollinger = [upperSeries, middleSeries, lowerSeries];
+        }
+
+        if (indicators.rsi) {
+          const rsiData = calculateRSI(candleData);
+          const rsiSeries = chartRef.current.addLineSeries({
+            color: '#9C27B0',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+            priceScaleId: 'rsi',
+            scaleMargins: {
+              top: 0.85,
+              bottom: 0.1,
+            },
+          });
+          rsiSeries.setData(rsiData);
+          indicatorSeriesRef.current.rsi = rsiSeries;
+        }
+
+        if (indicators.macd) {
+          const macdData = calculateMACD(candleData);
+          
+          const macdSeries = chartRef.current.addLineSeries({
+            color: '#2196F3',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+            priceScaleId: 'macd',
+            scaleMargins: {
+              top: 0.85,
+              bottom: 0.1,
+            },
+          });
+
+          const signalSeries = chartRef.current.addLineSeries({
+            color: '#FF9800',
+            lineWidth: 1.5,
+            priceLineVisible: false,
+            priceScaleId: 'macd',
+            scaleMargins: {
+              top: 0.85,
+              bottom: 0.1,
+            },
+          });
+
+          const histogramSeries = chartRef.current.addHistogramSeries({
+            color: '#26a69a',
+            priceScaleId: 'macd',
+            scaleMargins: {
+              top: 0.85,
+              bottom: 0.1,
+            },
+          });
+
+          macdSeries.setData(macdData.macdLine);
+          signalSeries.setData(macdData.signalLine);
+          histogramSeries.setData(macdData.histogram.map(h => ({
+            ...h,
+            color: h.value >= 0 ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+          })));
+
+          indicatorSeriesRef.current.macd = [macdSeries, signalSeries, histogramSeries];
+        }
+
+        chartRef.current.timeScale().fitContent();
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
     };
-  }, [symbol, timeframe, indicators, rsiLength]);
 
-  const handleIndicatorChange = (event) => {
-    setIndicators({
-      ...indicators,
-      [event.target.name]: event.target.checked
+    fetchData();
+
+    resizeObserver.current = new ResizeObserver(entries => {
+      if (entries.length === 0 || !entries[0].target) return;
+      const newWidth = entries[0].target.clientWidth;
+      chart.applyOptions({ width: newWidth });
     });
-  };
+
+    resizeObserver.current.observe(chartContainerRef.current);
+
+    return () => {
+      clearChart();
+      if (resizeObserver.current) {
+        resizeObserver.current.disconnect();
+      }
+      if (chartRef.current) {
+        chartRef.current.remove();
+      }
+    };
+  }, [symbol, timeframe, indicators, calculateEMA, calculateBollingerBands, calculateRSI, calculateMACD, clearChart]);
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
-      <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <FormGroup row>
-          <Tooltip title="Media Móvil Exponencial de 21 períodos. Útil para identificar tendencia a corto plazo.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.ema21}
-                  onChange={handleIndicatorChange}
-                  name="ema21"
-                />
-              }
-              label="EMA 21"
+      <FormGroup row sx={{ mb: 2 }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.ema21}
+              onChange={(e) => setIndicators({ ...indicators, ema21: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="Media Móvil Exponencial de 50 períodos. Indica tendencia de mediano plazo.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.ema50}
-                  onChange={handleIndicatorChange}
-                  name="ema50"
-                />
-              }
-              label="EMA 50"
+          }
+          label="EMA 21"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.ema50}
+              onChange={(e) => setIndicators({ ...indicators, ema50: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="Media Móvil Exponencial de 200 períodos. Es una referencia a largo plazo.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.ema200}
-                  onChange={handleIndicatorChange}
-                  name="ema200"
-                />
-              }
-              label="EMA 200"
+          }
+          label="EMA 50"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.ema200}
+              onChange={(e) => setIndicators({ ...indicators, ema200: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="Bandas de Bollinger muestran volatilidad. Cuando el precio está cerca de la banda superior puede estar sobrecomprado, cerca de la inferior puede estar sobrevendido.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.bollinger}
-                  onChange={handleIndicatorChange}
-                  name="bollinger"
-                />
-              }
-              label="Bollinger"
+          }
+          label="EMA 200"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.bollinger}
+              onChange={(e) => setIndicators({ ...indicators, bollinger: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="RSI mide la fuerza interna del precio. >70 indica sobrecompra, <30 sobreventa.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.rsi}
-                  onChange={handleIndicatorChange}
-                  name="rsi"
-                />
-              }
-              label="RSI"
+          }
+          label="Bollinger Bands"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.rsi}
+              onChange={(e) => setIndicators({ ...indicators, rsi: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="MACD muestra la relación entre dos medias móviles. Por encima de la línea de señal indica momentum alcista.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.macd}
-                  onChange={handleIndicatorChange}
-                  name="macd"
-                />
-              }
-              label="MACD"
+          }
+          label="RSI"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.macd}
+              onChange={(e) => setIndicators({ ...indicators, macd: e.target.checked })}
             />
-          </Tooltip>
-
-          <Tooltip title="ADX mide la fuerza de la tendencia. Un valor alto indica una tendencia fuerte.">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={indicators.adx}
-                  onChange={handleIndicatorChange}
-                  name="adx"
-                />
-              }
-              label="ADX"
+          }
+          label="MACD"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={indicators.volume}
+              onChange={(e) => setIndicators({ ...indicators, volume: e.target.checked })}
             />
-          </Tooltip>
-        </FormGroup>
-
-        {indicators.rsi && (
-          <Tooltip title="Ajusta el período del RSI para hacerlo más o menos sensible a los cambios de precio.">
-            <TextField
-              label="RSI Length"
-              type="number"
-              value={rsiLength}
-              onChange={(e) => setRsiLength(parseInt(e.target.value, 10))}
-              size="small"
-              sx={{ width: 100 }}
-            />
-          </Tooltip>
-        )}
-      </Box>
-
-      <Box 
-        ref={container}
-        sx={{ 
-          width: '100%', 
-          height: 'calc(100% - 60px)', 
-          minHeight: '500px' 
-        }}
-      />
+          }
+          label="Volume"
+        />
+      </FormGroup>
+      <div ref={chartContainerRef} />
     </Box>
   );
 };

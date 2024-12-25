@@ -12,6 +12,7 @@ import {
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { API_URL } from '../config/api';
+import { getAnalysisTimeframe } from '../utils/timeframeUtils';
 
 function TradingSuggestions({ symbol, timeframe }) {
   const [suggestion, setSuggestion] = useState(null);
@@ -26,8 +27,8 @@ function TradingSuggestions({ symbol, timeframe }) {
       setError(null);
       
       try {
-        // URL completa al backend
-        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
+        const analysisTimeframe = getAnalysisTimeframe(timeframe);
+        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${analysisTimeframe}`);
         if (!response.ok) {
           throw new Error('Error al obtener análisis');
         }
