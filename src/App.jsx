@@ -1,3 +1,4 @@
+// App.js
 import React, { useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -34,7 +35,8 @@ function App() {
       <Router>
         <div className="min-h-screen bg-gradient-to-br from-[#0B1120] via-[#1E1B4B] to-[#0B1120]">
           {/* Navbar */}
-          <nav className="fixed top-0 z-50 w-full border-b border-slate-800/20 bg-slate-900/80 backdrop-blur-xl">
+          {/* CHANGED: Quitamos backdrop-blur-xl (o lo cambiamos a blur-xs) */}
+          <nav className="fixed top-0 z-50 w-full border-b border-slate-800/20 bg-slate-900/80 /*backdrop-blur-xl*/">
             <div className="px-4 mx-auto">
               <div className="flex items-center justify-between h-16">
                 <div className="flex items-center">
@@ -86,12 +88,13 @@ function App() {
           </nav>
 
           {/* Sidebar */}
-          <aside className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} bg-slate-900/80 border-r border-slate-800/20 backdrop-blur-xl`}>
+          {/* CHANGED: Quitamos backdrop-blur-xl (o lo cambiamos a algo menor) */}
+          <aside className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} bg-slate-900/80 border-r border-slate-800/20 /*backdrop-blur-xl*/`}>
             <div className="h-full px-4 py-4 overflow-y-auto">
               <ul className="space-y-2">
                 <li>
                   <button
-                    onClick={() => {/* Implementar navegación al dashboard */}}
+                    onClick={() => {/* Navegar al Dashboard */}}
                     className="flex w-full items-center p-3 text-slate-200 rounded-lg hover:bg-slate-800/50 group transition-colors"
                   >
                     <LayoutDashboard className="h-5 w-5 text-indigo-500" />
@@ -100,7 +103,7 @@ function App() {
                 </li>
                 <li>
                   <button
-                    onClick={() => {/* Implementar navegación a mercados */}}
+                    onClick={() => {/* Navegar a Mercados */}}
                     className="flex w-full items-center p-3 text-slate-400 rounded-lg hover:bg-slate-800/50 group transition-colors"
                   >
                     <LineChart className="h-5 w-5" />
@@ -121,7 +124,9 @@ function App() {
           {/* Info Dialog */}
           <InfoDialog open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} />
         </div>
-        <footer className="fixed bottom-0 w-full py-2 text-center text-sm text-slate-400 bg-slate-900/50 backdrop-blur-sm border-t border-slate-800/50">
+
+        {/* CHANGED: Quitamos o reducimos backdrop-blur */}
+        <footer className="fixed bottom-0 w-full py-2 text-center text-sm text-slate-400 bg-slate-900/50 /*backdrop-blur-sm*/ border-t border-slate-800/50">
           Made with 💜 by 0-Zxt
         </footer>
       </Router>

@@ -56,7 +56,7 @@
     min-height: 100vh;
     /* CHANGED: Antes tenías background-attachment: fixed; */
     background: linear-gradient(110deg, #0f172a 0%, #1e293b 100%);
-    background-attachment: scroll; /* o quítalo si no lo necesitas */
+    /*background-attachment: scroll;  o quítalo si no lo necesitas */
     color-scheme: dark;
   }
 
