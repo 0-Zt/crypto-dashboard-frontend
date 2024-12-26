@@ -1,4 +1,5 @@
-/* Fuente del sistema como fallback mientras se carga Inter */
+/* index.css */
+
 @layer base {
   html {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -42,6 +43,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Variables de color */
 :root {
   --primary: rgb(99, 102, 241);
   --primary-dark: rgb(79, 70, 229);
@@ -52,10 +54,19 @@
   body {
     margin: 0;
     min-height: 100vh;
+    /* CHANGED: Antes tenías background-attachment: fixed; */
     background: linear-gradient(110deg, #0f172a 0%, #1e293b 100%);
-    background-attachment: fixed;
+    background-attachment: scroll; /* o quítalo si no lo necesitas */
     color-scheme: dark;
   }
+
+  /* Para pantallas grandes si quieres mantener fixed:*/
+  @media (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
+  }
+  
 
   /* Scrollbar styles */
   ::-webkit-scrollbar {
@@ -73,7 +84,7 @@
 
 @layer components {
   .card {
-    @apply bg-slate-900/70 backdrop-blur-xl border border-slate-800/50 rounded-xl shadow-xl shadow-slate-900/20;
+    @apply bg-slate-900/70 border border-slate-800/50 rounded-xl shadow-xl shadow-slate-900/20;
     @apply hover:border-slate-700/50 transition-all duration-300;
   }
 
@@ -130,7 +141,10 @@
 
 /* Glass effect for cards */
 .glass-effect {
+  /* CHANGED: elimina o reduce el blur si es muy costoso */
   @apply bg-gradient-to-br from-slate-900/90 to-slate-800/90;
-  @apply backdrop-blur-xl border border-slate-700/30;
+  /* Quita el backdrop-blur si no lo necesitas */
+  /* @apply backdrop-blur-xl; */
+  @apply border border-slate-700/30;
   @apply shadow-xl shadow-slate-900/20;
 }
