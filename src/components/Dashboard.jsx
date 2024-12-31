@@ -1,199 +1,186 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, Paper, FormControl, MenuItem, TextField, Autocomplete } from '@mui/material';
-import TradingViewChart from './TradingViewChart';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import IndicatorsPanel from './IndicatorsPanel';
-import TradingSuggestions from './TradingSuggestions';
 import MultiTimeframepanel from './MultiTimeframepanel';
-import { fetchApi } from '../config/api';
+import TradingSuggestions from './TradingSuggestions';
+import TopCryptoTable from './TopCryptoTable';
+import TradingViewChart from './TradingViewChart';
+import { Card } from './ui/card';
 
-const timeframes = [
-  { value: '1m', label: '1 minuto' },
-  { value: '5m', label: '5 minutos' },
-  { value: '15m', label: '15 minutos' },
-  { value: '30m', label: '30 minutos' },
-  { value: '1h', label: '1 hora' },
-  { value: '4h', label: '4 horas' },
-  { value: '1d', label: '1 día' },
-];
+const DEFAULT_SYMBOL = 'BTCUSDT';
+const DEFAULT_TIMEFRAME = '1h';
 
-function Dashboard() {
-  const [symbol, setSymbol] = useState('BTCUSDT'); 
+const Dashboard = () => {
+  const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
+  const [timeframe, setTimeframe] = useState(DEFAULT_TIMEFRAME);
   const [symbols, setSymbols] = useState([]);
-  const [timeframe, setTimeframe] = useState('1h');
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredSymbols, setFilteredSymbols] = useState([]);
 
   useEffect(() => {
-    const loadSymbols = async () => {
-      try {
-        const data = await fetchApi('/api/symbols');
-        setSymbols(data.symbols);
-        if (!symbol && data.symbols.length > 0) {
-          const btc = data.symbols.find(s => s.symbol === 'BTCUSDT');
-          if (btc) setSymbol('BTCUSDT');
-        }
-      } catch (err) {
-        console.error('Error loading symbols:', err);
-        setError('Error al cargar los símbolos. Por favor, intenta recargar la página.');
-      }
-    };
+    // Fetch symbols from Binance API
+    fetch('https://api.binance.com/api/v3/exchangeInfo')
+      .then(response => response.json())
+      .then(data => {
+        const pairs = data.symbols
+          .filter(s => s.status === 'TRADING')
+          .map(s => s.symbol);
+        setSymbols(pairs);
+        setFilteredSymbols(pairs);
+      })
+      .catch(error => {
+        console.error('Error fetching symbols:', error);
+        setSymbols([]);
+        setFilteredSymbols([]);
+      });
+  }, []);
 
-    loadSymbols();
-  }, [symbol]);
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = symbols.filter(sym => 
+        sym.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredSymbols(filtered);
+    } else {
+      setFilteredSymbols(symbols);
+    }
+  }, [searchTerm, symbols]);
+
+  const handleSymbolChange = (event) => {
+    setSymbol(event.target.value);
+  };
+
+  const handleTimeframeChange = (event) => {
+    setTimeframe(event.target.value);
+  };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      {/* Filtros con diseño mejorado */}
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 2, 
-        mb: 3,
-        '& .MuiOutlinedInput-root': {
-          backgroundColor: 'rgba(30, 41, 59, 0.5)',
-          borderRadius: '12px',
-          '&:hover': {
-            backgroundColor: 'rgba(30, 41, 59, 0.7)',
-          },
-        },
-      }}>
-        <Autocomplete
-          options={symbols}
-          getOptionLabel={(s) => `${s.baseAsset}/${s.quoteAsset}`}
-          value={symbols.find(s => s.symbol === symbol) || null}
-          onChange={(event, newValue) => {
-            if (newValue) {
-              setSymbol(newValue.symbol);
-            } 
-          }}
-          sx={{ width: 200 }}
-          renderInput={(params) => (
-            <TextField 
-              {...params} 
-              label="Par de trading" 
-              variant="outlined" 
-              size="small"
-            />
-          )}
-        />
-        <FormControl sx={{ minWidth: 120 }}>
-          <TextField
-            select
-            value={timeframe}
-            label="Timeframe"
-            onChange={(e) => setTimeframe(e.target.value)}
-            variant="outlined"
-            size="small"
-          >
-            {timeframes.map((tf) => (
-              <MenuItem key={tf.value} value={tf.value}>
-                {tf.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        </FormControl>
-      </Box>
+    <Box 
+      sx={{ 
+        width: '100vw',
+        minHeight: '100vh',
+        backgroundColor: 'black',
+        margin: 0,
+        padding: 0,
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 w-full">
+        {/* Panel Principal con Gráfico */}
+        <div className="lg:col-span-3 space-y-4">
+          <Card className="p-4">
+            <div className="flex flex-col space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <FormControl fullWidth sx={{ backgroundColor: 'rgba(22, 22, 22, 0.9)', borderRadius: '12px' }}>
+                    <InputLabel>Symbol</InputLabel>
+                    <Select
+                      value={symbol}
+                      label="Symbol"
+                      onChange={handleSymbolChange}
+                      onOpen={() => setSearchTerm('')}
+                      MenuProps={{
+                        PaperProps: {
+                          style: {
+                            maxHeight: 300,
+                            backgroundColor: '#1a1a1a',
+                          },
+                        },
+                        MenuListProps: {
+                          style: {
+                            backgroundColor: '#1a1a1a',
+                          }
+                        }
+                      }}
+                      displayEmpty
+                    >
+                      <MenuItem sx={{ backgroundColor: '#1a1a1a', '&:hover': { backgroundColor: '#2a2a2a' } }}>
+                        <input
+                          type="text"
+                          placeholder="Search symbol..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: '1px solid #444',
+                            borderRadius: '4px',
+                            backgroundColor: '#222',
+                            color: 'white'
+                          }}
+                        />
+                      </MenuItem>
+                      {filteredSymbols.map((sym) => (
+                        <MenuItem 
+                          key={sym} 
+                          value={sym}
+                          sx={{
+                            backgroundColor: '#1a1a1a',
+                            '&:hover': { backgroundColor: '#2a2a2a' },
+                            '&.Mui-selected': { backgroundColor: '#333' }
+                          }}
+                        >
+                          {sym}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div className="flex-1 ml-4">
+                  <FormControl fullWidth sx={{ backgroundColor: 'rgba(22, 22, 22, 0.9)', borderRadius: '12px' }}>
+                    <InputLabel>Timeframe</InputLabel>
+                    <Select
+                      value={timeframe}
+                      label="Timeframe"
+                      onChange={handleTimeframeChange}
+                    >
+                      <MenuItem value="1m">1m</MenuItem>
+                      <MenuItem value="5m">5m</MenuItem>
+                      <MenuItem value="15m">15m</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                      <MenuItem value="4h">4h</MenuItem>
+                      <MenuItem value="1d">1d</MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+              </div>
+              <div className="flex flex-col w-full gap-8">
+                {/* Sección del gráfico */}
+                <div className="w-full">
+                  <TradingViewChart
+                    symbol={symbol}
+                    timeframe={timeframe}
+                  />
+                </div>
 
-      <Grid container spacing={3}>
-        {/* Gráfico principal con altura ajustada */}
-        <Grid item xs={12} lg={8}>
-          <Paper 
-            elevation={0}
-            sx={{ 
-              p: 2, 
-              height: '700px',
-              backgroundColor: 'rgba(30, 41, 59, 0.5)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '16px',
-              border: '1px solid rgba(148, 163, 184, 0.1)',
-              '&:hover': {
-                border: '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-              },
-              transition: 'all 0.3s ease',
-            }}
-          >
-            <TradingViewChart symbol={symbol} timeframe={timeframe} />
-          </Paper>
-        </Grid>
+                {/* Sección de la tabla de criptomonedas */}
+                <div className="w-full mt-0">
+                  <TopCryptoTable />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
 
-        {/* Panel de indicadores y sugerencias */}
-        <Grid item xs={12} lg={4}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper 
-                elevation={0}
-                sx={{ 
-                  p: 3,
-                  backgroundColor: 'rgba(30, 41, 59, 0.5)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(148, 163, 184, 0.1)',
-                  '&:hover': {
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper 
-                elevation={0}
-                sx={{ 
-                  p: 3,
-                  backgroundColor: 'rgba(30, 41, 59, 0.5)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(148, 163, 184, 0.1)',
-                  '&:hover': {
-                    border: '1px solid rgba(148, 163, 184, 0.2)',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <TradingSuggestions symbol={symbol} timeframe={timeframe} />
-              </Paper>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-
-      {/* Panel de múltiples timeframes */}
-      <Box sx={{ mt: 3 }}>
-        <Paper 
-          elevation={0}
-          sx={{ 
-            p: 3,
-            backgroundColor: 'rgba(30, 41, 59, 0.5)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '16px',
-            border: '1px solid rgba(148, 163, 184, 0.1)',
-            '&:hover': {
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            },
-            transition: 'all 0.3s ease',
-          }}
-        >
-          <MultiTimeframepanel symbol={symbol} />
-        </Paper>
-      </Box>
-      {error && (
-        <Box sx={{ 
-          mt: 2, 
-          p: 2, 
-          borderRadius: '12px', 
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          color: '#ef4444',
-          border: '1px solid rgba(239, 68, 68, 0.2)'
-        }}>
-          {error}
-        </Box>
-      )}
+        {/* Panel Lateral */}
+        <div className="space-y-4">
+          <IndicatorsPanel 
+            symbol={symbol} 
+            timeframe={timeframe}
+          />
+          <TradingSuggestions 
+            symbol={symbol}
+            timeframe={timeframe}
+          />
+          <MultiTimeframepanel 
+            symbol={symbol}
+          />
+        </div>
+      </div>
     </Box>
   );
-}
+};
 
 export default Dashboard;

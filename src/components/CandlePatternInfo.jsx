@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
-import { Info } from 'lucide-react';
 
 const candlePatterns = {
   'Doji': {

@@ -1,72 +1,42 @@
 /* index.css */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
 @layer base {
   html {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   }
 }
 
-/* Cargar la fuente Inter después de que la página esté lista */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2) format('woff2');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2) format('woff2');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2) format('woff2');
-}
-
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.woff2) format('woff2');
+:root {
+  --background: #000000;
+  --card-background: #0A0A0B;
+  --border-color: #1F1F22;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9699A3;
+  --accent-blue: #0066FF;
+  --accent-green: #00F2EA;
+  --accent-red: #FF4D4D;
+  --primary: rgb(99, 102, 241);
+  --primary-dark: rgb(79, 70, 229);
+  --secondary: rgb(139, 92, 246);
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Variables de color */
-:root {
-  --primary: rgb(99, 102, 241);
-  --primary-dark: rgb(79, 70, 229);
-  --secondary: rgb(139, 92, 246);
-}
-
 @layer base {
   body {
     margin: 0;
     min-height: 100vh;
-    /* CHANGED: Antes tenías background-attachment: fixed; */
-    background: linear-gradient(110deg, #0f172a 0%, #1e293b 100%);
-    /*background-attachment: scroll;  o quítalo si no lo necesitas */
-    color-scheme: dark;
+    background-color: var(--background);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-
-  /* Para pantallas grandes si quieres mantener fixed:*/
-  @media (min-width: 1024px) {
-    body {
-      background-attachment: fixed;
-    }
-  }
-  
 
   /* Scrollbar styles */
   ::-webkit-scrollbar {
@@ -121,6 +91,27 @@
     @apply text-slate-200 placeholder-slate-400;
     @apply focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
   }
+}
+
+.positive-value {
+  color: var(--accent-green);
+}
+
+.negative-value {
+  color: var(--accent-red);
+}
+
+/* Card gradients */
+.card-gradient-1 {
+  background: linear-gradient(45deg, #FF4D4D, #F9CB28);
+}
+
+.card-gradient-2 {
+  background: linear-gradient(45deg, #0066FF, #00F2EA);
+}
+
+.card-gradient-3 {
+  background: linear-gradient(45deg, #7928CA, #FF0080);
 }
 
 /* Animations */

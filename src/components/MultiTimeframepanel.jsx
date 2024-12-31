@@ -1,31 +1,75 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import { API_URL } from '../config/api';
 import { Card } from './ui/card';
-import { LineChart, TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-// Keep using hour and day formats for multi-timeframe analysis
-const intervals = ['4h', '1d'];  // These timeframes work well for longer-term analysis
+const MultiTimeframePanel = ({ symbol }) => {
+  const [analysis, setAnalysis] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-function MultiTimeframepanel({ symbol }) {
-  const [data, setData] = useState({});
+  const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
   useEffect(() => {
-    const fetchAll = async () => {
-      let results = {};
-      for (const interval of intervals) {
-        const res = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${interval}`);
-        const json = await res.json();
-        results[interval] = json.analysis; 
+    const fetchMultiTimeframeAnalysis = async () => {
+      if (!symbol) return;
+      
+      setLoading(true);
+      try {
+        // Obtener análisis para cada timeframe individualmente
+        const analysisPromises = timeframes.map(async (timeframe) => {
+          const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
+          if (!response.ok) {
+            throw new Error(`Error fetching analysis for ${timeframe}`);
+          }
+          const data = await response.json();
+          return [timeframe, data.analysis];
+        });
+
+        const results = await Promise.allSettled(analysisPromises);
+        const analysisData = {};
+        
+        results.forEach((result, index) => {
+          if (result.status === 'fulfilled') {
+            const [timeframe, data] = result.value;
+            analysisData[timeframe] = data;
+          } else {
+            console.error(`Error fetching ${timeframes[index]}:`, result.reason);
+          }
+        });
+
+        setAnalysis(analysisData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching multi-timeframe analysis:', err);
+        setError('Error loading analysis');
+      } finally {
+        setLoading(false);
       }
-      setData(results);
     };
-    if (symbol) {
-      fetchAll();
-    }
+
+    fetchMultiTimeframeAnalysis();
   }, [symbol]);
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ color: 'error.main', p: 2, textAlign: 'center' }}>
+        {error}
+      </Box>
+    );
+  }
+
   const getTrendColor = (trend) => {
+    if (!trend) return 'text-slate-400';
     switch (trend) {
       case 'STRONG_BULLISH':
       case 'BULLISH':
@@ -39,80 +83,51 @@ function MultiTimeframepanel({ symbol }) {
   };
 
   const getTrendIcon = (trend) => {
+    if (!trend) return <TrendingUp className="w-4 h-4 text-slate-400" />;
     switch (trend) {
       case 'STRONG_BULLISH':
       case 'BULLISH':
-        return <TrendingUp className="w-5 h-5 text-emerald-500" />;
+        return <TrendingUp className="w-4 h-4 text-emerald-500" />;
       case 'STRONG_BEARISH':
       case 'BEARISH':
-        return <TrendingDown className="w-5 h-5 text-rose-500" />;
+        return <TrendingDown className="w-4 h-4 text-rose-500" />;
       default:
-        return <LineChart className="w-5 h-5 text-amber-500" />;
+        return <TrendingUp className="w-4 h-4 text-amber-500" />;
     }
   };
 
   return (
-    <Box>
-      <div className="flex items-center gap-2 mb-6">
-        <LineChart className="w-6 h-6 text-indigo-500" />
-        <Typography variant="h6" className="text-slate-200">
-          Análisis en Múltiples Timeframes
-        </Typography>
+    <div className="space-y-4">
+      <Typography variant="h6" className="text-slate-200">
+        Multi Timeframe Analysis
+      </Typography>
+      
+      <div className="grid gap-2">
+        {timeframes.map((tf) => (
+          <Card key={tf} className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-200">{tf}</span>
+              </div>
+              {analysis[tf] ? (
+                <div className="flex items-center gap-2">
+                  {getTrendIcon(analysis[tf].trend)}
+                  <span className={`text-sm font-medium ${getTrendColor(analysis[tf].trend)}`}>
+                    {analysis[tf].trend?.replace('_', ' ') || 'NEUTRAL'}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-400">LOADING</span>
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
       </div>
-      <Grid container spacing={2}>
-        {intervals.map(interval => {
-          const analysis = data[interval];
-          if (!analysis) return null;
-          return (
-            <Grid item xs={12} md={6} key={interval}>
-              <Card className="p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <LineChart className="w-5 h-5 text-indigo-500" />
-                    <Typography variant="subtitle1" className="text-slate-200">
-                      Intervalo: {interval}
-                    </Typography>
-                  </div>
-                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getTrendColor(analysis.trend)} bg-slate-800/50`}>
-                    {getTrendIcon(analysis.trend)}
-                    <span className="text-sm font-medium">
-                      {analysis.trend?.replace('_', ' ') || 'NEUTRAL'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-400">RSI</span>
-                    <span className="text-slate-200">
-                      {analysis.indicators.rsi.value.toFixed(2)}
-                      <span className="ml-2 text-xs">
-                        ({analysis.indicators.rsi.value > 70 ? 'Sobrecomprado' : 
-                          analysis.indicators.rsi.value < 30 ? 'Sobrevendido' : 'Neutral'})
-                      </span>
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-400">MACD</span>
-                    <span className={analysis.indicators.macd.macd >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                      {analysis.indicators.macd.macd.toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 p-3 rounded-lg bg-slate-800/30">
-                    <Typography variant="body2" className="text-slate-300">
-                      {analysis.analysis.summary}
-                    </Typography>
-                  </div>
-                </div>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-    </Box>
+    </div>
   );
-}
+};
 
-export default MultiTimeframepanel;
+export default MultiTimeframePanel;

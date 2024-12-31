@@ -1,137 +1,190 @@
-// App.js
 import React, { useState } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { 
-  LayoutDashboard, 
-  LineChart, 
-  Settings, 
-  Bell,
+import {
+  MenuIcon,
   Search,
-  Menu as MenuIcon,
-  HelpCircle
+  Bell,
+  Settings,
+  HelpCircle,
+  LineChart,
+  LayoutDashboard,
+  LogOut,
+  User,
 } from 'lucide-react';
+import { 
+  Menu, 
+  MenuItem, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider,
+  Avatar,
+  IconButton,
+  Box,
+  Typography,
+} from '@mui/material';
 import Dashboard from './components/Dashboard';
-import InfoDialog from './components/InfoDialog';
+import Navbar from './components/Navbar';
+import Portfolio from './components/Portfolio';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AccountBalanceWallet } from '@mui/icons-material';
+import Login from './components/Login';
 
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     background: {
-      default: '#0B1120',
-      paper: 'rgba(17, 24, 39, 0.7)',
+      default: '#000000',
+      paper: 'transparent',
+    },
+    primary: {
+      main: '#00f2ea',
+    },
+    secondary: {
+      main: '#00ff88',
+    },
+    error: {
+      main: '#ff3358',
+    },
+    warning: {
+      main: '#ffbb00',
     },
   },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#000000',
+          margin: 0,
+          padding: 0,
+          boxSizing: 'border-box',
+          overflowX: 'hidden'
+        }
+      }
+    }
+  }
 });
 
-function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+const MainApp = () => {
+  const { user } = useAuth();
+  console.log("Current user:", user); // Para debugging
 
+  if (!user) {
+    return <Login />;
+  }
+
+  return <AuthenticatedApp />;
+};
+
+const AuthenticatedApp = () => {
+  const { logout, user } = useAuth();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  console.log("Authenticated user:", user); // Para debugging
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      handleClose();
+      await logout();
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
+
+  return (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh',
+      width: '100vw',
+      backgroundColor: 'black',
+      margin: 0,
+      padding: 0,
+      boxSizing: 'border-box',
+      overflowX: 'hidden'
+    }}>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+      </Routes>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#1a1a1a',
+            border: '1px solid #333',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            mt: 1.5,
+            '& .MuiMenuItem-root': {
+              px: 2,
+              py: 1,
+              borderRadius: 1,
+              '&:hover': {
+                backgroundColor: '#2a2a2a',
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="subtitle1" noWrap>
+            {user?.email}
+          </Typography>
+        </Box>
+        <Divider sx={{ borderColor: '#333' }} />
+        <MenuItem component={Link} to="/profile">
+          <ListItemIcon>
+            <User className="w-5 h-5" />
+          </ListItemIcon>
+          <ListItemText>Profile</ListItemText>
+        </MenuItem>
+        <MenuItem component={Link} to="/settings">
+          <ListItemIcon>
+            <Settings className="w-5 h-5" />
+          </ListItemIcon>
+          <ListItemText>Settings</ListItemText>
+        </MenuItem>
+        <Divider sx={{ my: 1, borderColor: '#333' }} />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogOut className="w-5 h-5" />
+          </ListItemIcon>
+          <ListItemText>Logout</ListItemText>
+        </MenuItem>
+      </Menu>
+    </Box>
+  );
+};
+
+const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Router>
-        <div className="min-h-screen bg-gradient-to-br from-[#0B1120] via-[#1E1B4B] to-[#0B1120]">
-          {/* Navbar */}
-          {/* CHANGED: Quitamos backdrop-blur-xl (o lo cambiamos a blur-xs) */}
-          <nav className="fixed top-0 z-50 w-full border-b border-slate-800/20 bg-slate-900/80 /*backdrop-blur-xl*/">
-            <div className="px-4 mx-auto">
-              <div className="flex items-center justify-between h-16">
-                <div className="flex items-center">
-                  <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
-                  >
-                    <MenuIcon className="h-5 w-5" />
-                  </button>
-                  <div className="flex items-center ml-4">
-                    <LineChart className="h-6 w-6 text-indigo-500" />
-                    <h1 className="ml-2 text-lg font-semibold text-slate-200 md:bg-gradient-to-r md:from-indigo-400 md:to-purple-400 md:text-transparent md:bg-clip-text">
-                      Crypto Analytics
-                    </h1>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="relative hidden md:block">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Search className="h-4 w-4 text-slate-400" />
-                    </div>
-                    <input
-                      type="text"
-                      className="w-64 pl-10 pr-4 py-1.5 text-sm text-slate-200 bg-slate-800/50 border border-slate-700/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50"
-                      placeholder="Search markets..."
-                    />
-                  </div>
-                  
-                  <button
-                    onClick={() => setInfoDialogOpen(true)}
-                    className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors"
-                    title="Información de Indicadores"
-                  >
-                    <HelpCircle className="h-5 w-5" />
-                  </button>
-                  
-                  <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors relative">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-indigo-500 rounded-full"></span>
-                  </button>
-                  
-                  <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-colors">
-                    <Settings className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </nav>
-
-          {/* Sidebar */}
-          {/* CHANGED: Quitamos backdrop-blur-xl (o lo cambiamos a algo menor) */}
-          <aside className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} bg-slate-900/80 border-r border-slate-800/20 /*backdrop-blur-xl*/`}>
-            <div className="h-full px-4 py-4 overflow-y-auto">
-              <ul className="space-y-2">
-                <li>
-                  <button
-                    onClick={() => {/* Navegar al Dashboard */}}
-                    className="flex w-full items-center p-3 text-slate-200 rounded-lg hover:bg-slate-800/50 group transition-colors"
-                  >
-                    <LayoutDashboard className="h-5 w-5 text-indigo-500" />
-                    <span className="ml-3 font-medium">Dashboard</span>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {/* Navegar a Mercados */}}
-                    className="flex w-full items-center p-3 text-slate-400 rounded-lg hover:bg-slate-800/50 group transition-colors"
-                  >
-                    <LineChart className="h-5 w-5" />
-                    <span className="ml-3">Markets</span>
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </aside>
-
-          {/* Main content */}
-          <main className={`pt-20 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''}`}>
-            <div className="p-4">
-              <Dashboard />
-            </div>
-          </main>
-
-          {/* Info Dialog */}
-          <InfoDialog open={infoDialogOpen} onClose={() => setInfoDialogOpen(false)} />
-        </div>
-
-        {/* CHANGED: Quitamos o reducimos backdrop-blur */}
-        <footer className="fixed bottom-0 w-full py-2 text-center text-sm text-slate-400 bg-slate-900/50 /*backdrop-blur-sm*/ border-t border-slate-800/50">
-          Made with 💜 by 0-Zxt
-        </footer>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <MainApp />
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
-}
+};
 
 export default App;
