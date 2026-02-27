@@ -4,7 +4,11 @@ import PortfolioView from './Portfolio/PortfolioView';
 import { TrendingUp, TrendingDown, PieChart } from 'lucide-react';
 
 const Portfolio = () => {
-  const [portfolioStats, setPortfolioStats] = useState({ totalValue: 0, totalProfit: 0, profitPercentage: 0 });
+  const [portfolioStats, setPortfolioStats] = useState({
+    totalValue: 0,
+    totalProfit: 0,
+    profitPercentage: 0
+  });
 
   const handleUpdateTotalValue = useCallback((stats) => {
     setPortfolioStats(stats);

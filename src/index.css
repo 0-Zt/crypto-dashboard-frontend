@@ -20,11 +20,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  ::selection {
-    background-color: rgba(71, 215, 255, 0.28);
-    color: #f2f6ff;
-  }
-
   ::-webkit-scrollbar {
     @apply w-2;
   }
@@ -34,7 +29,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-[#2d3f69] hover:bg-[#425b95];
+    @apply rounded-full bg-[#2b3960] hover:bg-[#394d82];
   }
 }
 
@@ -45,9 +40,9 @@
 }
 
 .positive-value {
-  color: #24d69a;
+  color: #35e8ff;
 }
 
 .negative-value {
-  color: #ff6b87;
+  color: #ff6d8a;
 }

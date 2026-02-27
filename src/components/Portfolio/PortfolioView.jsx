@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-react';
-import { collection, addDoc, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { getCurrentPrice } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -32,10 +32,6 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   const { user } = useAuth();
   const [portfolio, setPortfolio] = useState([]);
   const [currentPrices, setCurrentPrices] = useState({});
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [newAsset, setNewAsset] = useState(emptyAsset);
-
   const fetchPortfolio = useCallback(async () => {
     if (!user) return;
 
@@ -108,11 +104,6 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
       return () => clearInterval(interval);
     }
 
-    if (onUpdateTotalValue) {
-      onUpdateTotalValue({ totalValue: 0, totalProfit: 0, profitPercentage: 0 });
-    }
-  }, [portfolio, fetchPrices, onUpdateTotalValue]);
-
   const handleDelete = async (id) => {
     try {
       const docRef = doc(db, 'portfolios', user.uid, 'assets', id);
@@ -123,48 +114,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
     }
   };
 
-  const handleOpenDialog = (asset = null) => {
-    if (asset) {
-      setEditingId(asset.id);
-      setNewAsset({ symbol: asset.symbol, quantity: String(asset.quantity), purchasePrice: String(asset.purchasePrice) });
-    } else {
-      setEditingId(null);
-      setNewAsset(emptyAsset);
-    }
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setEditingId(null);
-    setNewAsset(emptyAsset);
-  };
-
-  const handleSaveAsset = async () => {
-    if (!user || !newAsset.symbol || !newAsset.quantity || !newAsset.purchasePrice) return;
-
-    const payload = {
-      symbol: newAsset.symbol.toUpperCase().trim(),
-      quantity: parseFloat(newAsset.quantity),
-      purchasePrice: parseFloat(newAsset.purchasePrice),
-      timestamp: new Date().toISOString(),
-    };
-
-    try {
-      if (editingId) {
-        const docRef = doc(db, 'portfolios', user.uid, 'assets', editingId);
-        await updateDoc(docRef, payload);
-      } else {
-        const portfolioRef = collection(db, 'portfolios', user.uid, 'assets');
-        await addDoc(portfolioRef, payload);
-      }
-
-      handleCloseDialog();
-      await fetchPortfolio();
-    } catch (error) {
-      console.error('Error saving asset:', error);
-    }
-  };
+  const handleOpenDialog = () => {};
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -176,7 +126,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
+            onClick={handleOpenDialog}
             sx={{
               background: 'linear-gradient(135deg, #47d7ff 0%, #9b8cff 100%)',
               color: '#0a1020',
@@ -227,7 +177,13 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
                     </TableCell>
                     <TableCell>
                       <Tooltip title="Editar">
-                        <IconButton onClick={() => handleOpenDialog(asset)} sx={{ color: '#47d7ff' }}>
+                        <IconButton
+                          onClick={handleOpenDialog}
+                          sx={{ 
+                            color: '#00f2ea',
+                            '&:hover': { backgroundColor: 'rgba(0, 242, 234, 0.1)' }
+                          }}
+                        >
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
