@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-react';
-import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, setDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { getCurrentPrice } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +32,10 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   const { user } = useAuth();
   const [portfolio, setPortfolio] = useState([]);
   const [currentPrices, setCurrentPrices] = useState({});
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newAsset, setNewAsset] = useState(emptyAsset);
+  const [editingId, setEditingId] = useState(null);
+
   const fetchPortfolio = useCallback(async () => {
     if (!user) return;
 
@@ -44,6 +48,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
         quantity: parseFloat(assetDoc.data().quantity),
         purchasePrice: parseFloat(assetDoc.data().purchasePrice),
       }));
+
       setPortfolio(portfolioData);
     } catch (error) {
       console.error('Error fetching portfolio:', error);
@@ -51,7 +56,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   }, [user]);
 
   const updateTotalValues = useCallback(
-    async (prices, currentPortfolio) => {
+    (prices, currentPortfolio) => {
       let totalPortfolioValue = 0;
       let totalProfit = 0;
       let totalInvested = 0;
@@ -79,7 +84,14 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   );
 
   const fetchPrices = useCallback(async () => {
+    if (portfolio.length === 0) {
+      setCurrentPrices({});
+      updateTotalValues({}, []);
+      return;
+    }
+
     const prices = {};
+
     for (const asset of portfolio) {
       try {
         const priceData = await getCurrentPrice(asset.symbol);
@@ -89,6 +101,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
         prices[asset.symbol] = null;
       }
     }
+
     setCurrentPrices(prices);
     updateTotalValues(prices, portfolio);
   }, [portfolio, updateTotalValues]);
@@ -98,13 +111,14 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   }, [fetchPortfolio]);
 
   useEffect(() => {
-    if (portfolio.length > 0) {
-      fetchPrices();
-      const interval = setInterval(fetchPrices, 30000);
-      return () => clearInterval(interval);
-    }
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 30000);
+    return () => clearInterval(interval);
+  }, [fetchPrices]);
 
   const handleDelete = async (id) => {
+    if (!user) return;
+
     try {
       const docRef = doc(db, 'portfolios', user.uid, 'assets', id);
       await deleteDoc(docRef);
@@ -114,25 +128,69 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
     }
   };
 
-  const handleOpenDialog = () => {};
+  const handleOpenDialog = (asset = null) => {
+    if (asset) {
+      setEditingId(asset.id);
+      setNewAsset({
+        symbol: asset.symbol,
+        quantity: asset.quantity,
+        purchasePrice: asset.purchasePrice,
+      });
+    } else {
+      setEditingId(null);
+      setNewAsset(emptyAsset);
+    }
+
+    setDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setEditingId(null);
+    setNewAsset(emptyAsset);
+  };
+
+  const handleSaveAsset = async () => {
+    if (!user) return;
+
+    const payload = {
+      symbol: newAsset.symbol.trim().toUpperCase(),
+      quantity: Number(newAsset.quantity),
+      purchasePrice: Number(newAsset.purchasePrice),
+      updatedAt: new Date(),
+    };
+
+    if (!payload.symbol || Number.isNaN(payload.quantity) || Number.isNaN(payload.purchasePrice)) {
+      return;
+    }
+
+    try {
+      if (editingId) {
+        const assetRef = doc(db, 'portfolios', user.uid, 'assets', editingId);
+        await setDoc(assetRef, payload, { merge: true });
+      } else {
+        const portfolioRef = collection(db, 'portfolios', user.uid, 'assets');
+        await addDoc(portfolioRef, {
+          ...payload,
+          createdAt: new Date(),
+        });
+      }
+
+      handleCloseDialog();
+      await fetchPortfolio();
+    } catch (error) {
+      console.error('Error saving asset:', error);
+    }
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ mt: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" component="h2" sx={{ color: '#eef2ff' }}>
+          <Typography variant="h6" component="h2" sx={{ color: 'text.primary' }}>
             Mis Activos
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenDialog}
-            sx={{
-              background: 'linear-gradient(135deg, #47d7ff 0%, #9b8cff 100%)',
-              color: '#0a1020',
-              '&:hover': { opacity: 0.95 },
-            }}
-          >
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>
             Agregar Activo
           </Button>
         </Box>
@@ -149,7 +207,9 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
             <TableHead>
               <TableRow>
                 {['Símbolo', 'Cantidad', 'Precio Compra', 'Precio Actual', 'Valor Total', 'Ganancia/Pérdida', 'Acciones'].map((head) => (
-                  <TableCell key={head} sx={{ color: '#9fb0db', fontWeight: 700 }}>{head}</TableCell>
+                  <TableCell key={head} sx={{ color: 'text.secondary', fontWeight: 700 }}>
+                    {head}
+                  </TableCell>
                 ))}
               </TableRow>
             </TableHead>
@@ -178,10 +238,10 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
                     <TableCell>
                       <Tooltip title="Editar">
                         <IconButton
-                          onClick={handleOpenDialog}
-                          sx={{ 
-                            color: '#00f2ea',
-                            '&:hover': { backgroundColor: 'rgba(0, 242, 234, 0.1)' }
+                          onClick={() => handleOpenDialog(asset)}
+                          sx={{
+                            color: '#5cc8ff',
+                            '&:hover': { backgroundColor: 'rgba(92, 200, 255, 0.1)' },
                           }}
                         >
                           <EditIcon />
@@ -216,14 +276,35 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
         <DialogTitle sx={{ color: '#eef2ff' }}>{editingId ? 'Editar Activo' : 'Agregar Activo'}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField label="Símbolo (ej: BTCUSDT)" value={newAsset.symbol} onChange={(e) => setNewAsset((p) => ({ ...p, symbol: e.target.value }))} fullWidth />
-            <TextField label="Cantidad" type="number" value={newAsset.quantity} onChange={(e) => setNewAsset((p) => ({ ...p, quantity: e.target.value }))} fullWidth />
-            <TextField label="Precio de compra" type="number" value={newAsset.purchasePrice} onChange={(e) => setNewAsset((p) => ({ ...p, purchasePrice: e.target.value }))} fullWidth />
+            <TextField
+              label="Símbolo (ej: BTCUSDT)"
+              value={newAsset.symbol}
+              onChange={(e) => setNewAsset((p) => ({ ...p, symbol: e.target.value }))}
+              fullWidth
+            />
+            <TextField
+              label="Cantidad"
+              type="number"
+              value={newAsset.quantity}
+              onChange={(e) => setNewAsset((p) => ({ ...p, quantity: e.target.value }))}
+              fullWidth
+            />
+            <TextField
+              label="Precio de compra"
+              type="number"
+              value={newAsset.purchasePrice}
+              onChange={(e) => setNewAsset((p) => ({ ...p, purchasePrice: e.target.value }))}
+              fullWidth
+            />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button onClick={handleCloseDialog} color="inherit">Cancelar</Button>
-          <Button onClick={handleSaveAsset} variant="contained">Guardar</Button>
+          <Button onClick={handleCloseDialog} color="inherit" variant="outlined">
+            Cancelar
+          </Button>
+          <Button onClick={handleSaveAsset} variant="contained">
+            Guardar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
