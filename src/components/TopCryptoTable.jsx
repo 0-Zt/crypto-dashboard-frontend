@@ -88,31 +88,28 @@ const TopCryptoTable = () => {
 
   return (
     <div className="w-full mt-3">
-      <Card sx={{ 
-        backgroundColor: '#0f0f0f',
-        border: '1px solid #1F1F22',
-        borderRadius: '16px',
-        width: '100%',
-        p: 3
-      }}>
+      <Card className="w-full p-3 md:p-5">
         <div className="flex flex-col space-y-4">
-          <Typography variant="h6" component="h2" className="text-lg font-medium text-white mb-4">
+          <Typography variant="h6" component="h2" className="text-lg font-semibold text-[#eef2ff] mb-2">
             Top Criptomonedas
+          </Typography>
+          <Typography sx={{ color: '#9fb0db', fontSize: 13 }}>
+            Pares USDT ordenados por volumen en las últimas 24h
           </Typography>
         </div>
         
         <div className="overflow-y-auto px-4 pb-4">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-[#0A0A0B] border-b border-[#1F1F22]">
+          <table className="w-full mt-2">
+            <thead className="sticky top-0 bg-[#0f1629] border-b border-[#253354]">
               <tr className="text-left">
-                <th className="py-3 text-sm font-medium text-gray-400">Ranking</th>
-                <th className="py-3 text-sm font-medium text-gray-400">Cripto</th>
-                <th className="py-3 text-sm font-medium text-gray-400">Precio</th>
-                <th className="py-3 text-sm font-medium text-gray-400 text-right">Cambio 24h</th>
-                <th className="py-3 text-sm font-medium text-gray-400 text-right">Volumen 24h</th>
+                <th className="py-3 text-sm font-medium text-[#95a7d6]">Ranking</th>
+                <th className="py-3 text-sm font-medium text-[#95a7d6]">Cripto</th>
+                <th className="py-3 text-sm font-medium text-[#95a7d6]">Precio</th>
+                <th className="py-3 text-sm font-medium text-[#95a7d6] text-right">Cambio 24h</th>
+                <th className="py-3 text-sm font-medium text-[#95a7d6] text-right">Volumen 24h</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F1F22]">
+            <tbody className="divide-y divide-[#253354]">
               {cryptoData
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((crypto, index) => {
@@ -121,11 +118,11 @@ const TopCryptoTable = () => {
                   const rank = page * rowsPerPage + index + 1;
                   
                   return (
-                    <tr key={crypto.symbol} className="hover:bg-[#1a1a1a] transition-colors">
-                      <td className="py-3 text-gray-400 w-16">#{rank}</td>
+                    <tr key={crypto.symbol} className="hover:bg-[#18213a] transition-colors">
+                      <td className="py-3 text-[#95a7d6] w-16">#{rank}</td>
                       <td className="py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#1F1F22] flex items-center justify-center overflow-hidden">
+                          <div className="w-8 h-8 rounded-full bg-[#1b2543] flex items-center justify-center overflow-hidden">
                             <img
                               src={crypto.image}
                               alt={crypto.name}
@@ -152,7 +149,7 @@ const TopCryptoTable = () => {
                       </td>
                       <td className="py-3 text-right">
                         <div className={`inline-flex items-center gap-1 text-base ${
-                          isPositive ? 'text-[#00f2ea]' : 'text-red-500'
+                          isPositive ? 'text-[#35e8ff]' : 'text-[#ff6d8a]'
                         }`}>
                           {isPositive ? (
                             <ArrowUpRight className="w-4 h-4" />

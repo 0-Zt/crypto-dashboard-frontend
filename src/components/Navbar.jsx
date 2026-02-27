@@ -1,9 +1,44 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Box, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { HelpCircle, Settings, Menu as MenuIcon, LogOut, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Box,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Chip,
+  Avatar,
+} from '@mui/material';
+import {
+  HelpCircle,
+  Settings,
+  Menu as MenuIcon,
+  LogOut,
+  User,
+  LayoutDashboard,
+  BriefcaseBusiness,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import InfoDialog from './InfoDialog';
+
+const navLinkSx = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '10px 14px',
+  borderRadius: '12px',
+  fontWeight: 500,
+  color: '#a6b0cf',
+  textDecoration: 'none',
+  transition: 'all 0.2s ease',
+};
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -33,80 +68,87 @@ const Navbar = () => {
       handleMenuClose();
       await logout();
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error('Error during logout:', error);
     }
   };
 
   return (
     <>
-      <AppBar 
-        position="fixed" 
-        sx={{ 
-          background: '#000',
-          borderBottom: '1px solid #333333',
-          boxShadow: 'none'
+      <AppBar
+        position="fixed"
+        sx={{
+          background: 'rgba(6, 9, 17, 0.8)',
+          borderBottom: '1px solid rgba(116, 138, 199, 0.2)',
+          backdropFilter: 'blur(14px)',
+          boxShadow: '0 20px 45px rgba(0, 0, 0, 0.35)',
         }}
       >
-        <Toolbar>
+        <Toolbar sx={{ minHeight: '70px !important' }}>
           <IconButton
             edge="start"
             color="inherit"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             sx={{
-              marginRight: 2,
-              color: 'rgb(156, 163, 175)',
+              marginRight: 1.5,
+              color: '#c4ccee',
+              border: '1px solid rgba(98, 120, 177, 0.4)',
+              backgroundColor: 'rgba(11, 16, 30, 0.8)',
               '&:hover': {
-                backgroundColor: 'rgba(75, 85, 99, 0.1)',
-                color: 'rgb(209, 213, 219)'
-              }
+                backgroundColor: 'rgba(33, 46, 82, 0.8)',
+              },
             }}
           >
-            <MenuIcon />
+            {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
           </IconButton>
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ 
-              flexGrow: 1,
-              color: '#fff',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}
-          >
-            Crypto Analytics
-          </Typography>
-          <IconButton 
-            color="inherit" 
+
+          <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <MenuIcon size={18} color="#36e2ff" />
+            <Typography variant="h6" component="div" sx={{ color: '#eff2ff' }}>
+              Crypto Analytics
+            </Typography>
+            <Chip
+              size="small"
+              label="Live"
+              sx={{
+                height: 22,
+                fontWeight: 600,
+                color: '#0a1020',
+                background: 'linear-gradient(135deg, #35e8ff 0%, #7de3ff 100%)',
+              }}
+            />
+          </Box>
+
+          <IconButton
+            color="inherit"
             onClick={handleInfoClick}
-            sx={{ 
+            sx={{
               marginRight: 1,
-              color: 'rgb(156, 163, 175)',
+              color: '#b4bfdc',
               '&:hover': {
-                backgroundColor: 'rgba(75, 85, 99, 0.1)',
-                color: 'rgb(209, 213, 219)'
-              }
+                backgroundColor: 'rgba(75, 104, 181, 0.18)',
+                color: '#dce4ff',
+              },
             }}
           >
-            <HelpCircle />
+            <HelpCircle size={20} />
           </IconButton>
-          <IconButton 
+          <IconButton
             onClick={handleSettingsClick}
-            sx={{ 
-              color: 'rgb(156, 163, 175)',
+            sx={{
+              color: '#b4bfdc',
+              border: '1px solid rgba(98, 120, 177, 0.35)',
+              backgroundColor: 'rgba(11, 16, 30, 0.8)',
               '&:hover': {
-                backgroundColor: 'rgba(75, 85, 99, 0.1)',
-                color: 'rgb(209, 213, 219)'
-              }
+                backgroundColor: 'rgba(75, 104, 181, 0.18)',
+                color: '#dce4ff',
+              },
             }}
           >
-            <Settings />
+            <Settings size={18} />
           </IconButton>
         </Toolbar>
       </AppBar>
 
-      {/* Menú de usuario */}
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -114,17 +156,21 @@ const Navbar = () => {
         onClick={handleMenuClose}
         PaperProps={{
           sx: {
-            backgroundColor: '#000000',
-            border: '1px solid #333333',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+            minWidth: 240,
+            backgroundColor: 'rgba(11, 16, 30, 0.92)',
+            border: '1px solid rgba(98, 120, 177, 0.32)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 18px 30px rgba(0, 0, 0, 0.45)',
             mt: 1.5,
+            borderRadius: 2,
             '& .MuiMenuItem-root': {
-              px: 2,
+              mx: 1,
+              px: 1.5,
               py: 1,
-              borderRadius: 1,
-              color: 'rgb(209, 213, 219)',
+              borderRadius: 1.5,
+              color: '#d7def5',
               '&:hover': {
-                backgroundColor: 'rgba(75, 85, 99, 0.1)',
+                backgroundColor: 'rgba(53, 80, 145, 0.22)',
               },
             },
           },
@@ -132,60 +178,78 @@ const Navbar = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <Box sx={{ px: 2, py: 1.5 }}>
-          <Typography variant="subtitle1" sx={{ color: 'rgb(209, 213, 219)' }}>
+        <Box sx={{ px: 2, py: 1.6, display: 'flex', alignItems: 'center', gap: 1.2 }}>
+          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: 'rgba(53, 232, 255, 0.2)', color: '#7ee4ff' }}>
+            {user?.email?.charAt(0)?.toUpperCase() || 'U'}
+          </Avatar>
+          <Typography variant="subtitle2" sx={{ color: '#e2e9ff' }}>
             {user?.email}
           </Typography>
         </Box>
-        <Divider sx={{ borderColor: 'rgba(75, 85, 99, 0.3)' }} />
-        <MenuItem component={Link} to="/profile">
+        <Divider sx={{ borderColor: 'rgba(116, 138, 199, 0.24)' }} />
+        <MenuItem component={NavLink} to="/profile">
           <ListItemIcon>
-            <User className="w-5 h-5 text-gray-400" />
+            <User className="w-5 h-5 text-slate-300" />
           </ListItemIcon>
           <ListItemText>Profile</ListItemText>
         </MenuItem>
-        <Divider sx={{ my: 1, borderColor: 'rgba(75, 85, 99, 0.3)' }} />
+        <Divider sx={{ my: 1, borderColor: 'rgba(116, 138, 199, 0.24)' }} />
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
-            <LogOut className="w-5 h-5 text-gray-400" />
+            <LogOut className="w-5 h-5 text-slate-300" />
           </ListItemIcon>
           <ListItemText>Logout</ListItemText>
         </MenuItem>
       </Menu>
 
-      {/* Sidebar */}
       <Box
         sx={{
           position: 'fixed',
-          top: 64, // altura del AppBar
-          left: sidebarOpen ? 0 : -240,
-          width: 240,
-          height: 'calc(100vh - 64px)',
-          backgroundColor: '#000000',
-          borderRight: '1px solid #333333',
-          transition: 'left 0.3s ease-in-out',
+          top: 70,
+          left: sidebarOpen ? 0 : -250,
+          width: 250,
+          height: 'calc(100vh - 70px)',
+          background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.93) 0%, rgba(7, 10, 17, 0.93) 100%)',
+          borderRight: '1px solid rgba(116, 138, 199, 0.2)',
+          backdropFilter: 'blur(14px)',
+          transition: 'left 0.28s ease-in-out',
           zIndex: 1200,
-          padding: '1rem'
+          padding: '1rem 0.75rem',
+          overflowY: 'auto',
         }}
       >
-        <div className="flex flex-col gap-2">
-          <Link to="/dashboard" className="text-decoration-none">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-800/50 transition-colors">
-              <span>Dashboard</span>
-            </div>
-          </Link>
-          <Link to="/portfolio" className="text-decoration-none">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-800/50 transition-colors">
-              <span>Portfolio</span>
-            </div>
-          </Link>
+        <div className="flex flex-col gap-1.5">
+          <NavLink
+            to="/dashboard"
+            style={({ isActive }) => ({
+              ...navLinkSx,
+              color: isActive ? '#ebf1ff' : navLinkSx.color,
+              background: isActive ? 'linear-gradient(130deg, rgba(53, 232, 255, 0.22), rgba(139, 123, 255, 0.22))' : 'transparent',
+              border: isActive ? '1px solid rgba(126, 160, 255, 0.5)' : '1px solid transparent',
+            })}
+          >
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </NavLink>
+
+          <NavLink
+            to="/portfolio"
+            style={({ isActive }) => ({
+              ...navLinkSx,
+              color: isActive ? '#ebf1ff' : navLinkSx.color,
+              background: isActive ? 'linear-gradient(130deg, rgba(53, 232, 255, 0.22), rgba(139, 123, 255, 0.22))' : 'transparent',
+              border: isActive ? '1px solid rgba(126, 160, 255, 0.5)' : '1px solid transparent',
+            })}
+          >
+            <BriefcaseBusiness size={18} />
+            <span>Portfolio</span>
+          </NavLink>
         </div>
       </Box>
 
       <InfoDialog open={infoOpen} onClose={handleInfoClose} />
 
-      {/* Espaciador para el contenido debajo del AppBar */}
-      <Toolbar />
+      <Toolbar sx={{ minHeight: '70px !important' }} />
     </>
   );
 };
