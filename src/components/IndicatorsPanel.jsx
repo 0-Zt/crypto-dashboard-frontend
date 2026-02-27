@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { API_URL } from '../config/api';
 import { Card, CardContent } from './ui/card';
 import {
-  TrendingUp,
-  TrendingDown,
   Activity,
   BarChart2,
-  Waves,
 } from 'lucide-react';
 import { getAnalysisTimeframe } from '../utils/timeframeUtils';
 
@@ -73,19 +70,6 @@ const IndicatorsPanel = ({ symbol, timeframe }) => {
     }
   };
 
-  const getTrendIcon = (trend) => {
-    switch (trend) {
-      case 'STRONG_BULLISH':
-      case 'BULLISH':
-        return <TrendingUp className="w-5 h-5 text-emerald-500" />;
-      case 'STRONG_BEARISH':
-      case 'BEARISH':
-        return <TrendingDown className="w-5 h-5 text-rose-500" />;
-      default:
-        return <TrendingUp className="w-5 h-5 text-amber-500" />;
-    }
-  };
-
   const getRsiColor = (value) => {
     const rsi = Number(value);
     if (isNaN(rsi)) return 'text-slate-400';
@@ -140,7 +124,7 @@ const IndicatorsPanel = ({ symbol, timeframe }) => {
     trend,
     indicators: {
       rsi: { value: rsiValue, analysis: rsiAnalysis },
-      macd: { macd, signal, histogram, analysis: macdAnalysis },
+      macd: { macd, signal, analysis: macdAnalysis },
       ema: { ema21, ema50, ema200 },
       bollinger_bands: { upper, middle, lower, analysis: bbAnalysis }
     }

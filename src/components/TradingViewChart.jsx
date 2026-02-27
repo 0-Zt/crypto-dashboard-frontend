@@ -6,9 +6,7 @@ import PropTypes from 'prop-types';
 import {
   detectCandlePatterns,
   getKeyLevels,
-  calculateEMA,
-  calculateVPT,
-  detectDivergences
+  calculateVPT
 } from '../utils/technicalAnalysis';
 
 const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
@@ -74,15 +72,6 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
       return { fast: 13, mid: 21, slow: 55 };
     }
     return { fast: 21, mid: 55, slow: 200 }; // timeframes mayores
-  };
-
-  const getBollingerSettings = (tf) => {
-    if (tf === '1m' || tf === '5m') {
-      return { period: 10, stdDev: 2 };
-    } else if (tf === '15m' || tf === '30m') {
-      return { period: 15, stdDev: 2 };
-    }
-    return { period: 20, stdDev: 2 }; // timeframes mayores
   };
 
   const getPatternTooltip = (pattern) => {
@@ -323,7 +312,7 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
     // Dibujar patrones y niveles
     await drawPatterns();
     await drawKeyLevels();
-  }, [symbol, timeframe, indicators, drawPatterns, drawKeyLevels]);
+  }, [timeframe, indicators, drawPatterns, drawKeyLevels, calculateEMA]);
 
   useEffect(() => {
     if (!symbol) return; // No crear el gráfico si no hay símbolo seleccionado
@@ -431,7 +420,7 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
     initChart();
 
     return () => cleanupChart();
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, cleanupChart, updateIndicators]);
 
   useEffect(() => {
     if (chartRef.current && candleSeriesRef.current) {
@@ -479,7 +468,7 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
 
       fetchData();
     }
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, updateIndicators]);
 
   useEffect(() => {
     if (chartRef.current && candleSeriesRef.current) {
@@ -487,27 +476,6 @@ const TradingViewChart = ({ symbol = 'BTCUSDT', timeframe = '1h' }) => {
       drawPatterns();
     }
   }, [drawKeyLevels, drawPatterns]);
-
-  // Funciones para detectar patrones y niveles clave
-  const detectCandlePatterns = async (data) => {
-    try {
-      // Por ahora, desactivamos los mensajes de error ya que es una funcionalidad en desarrollo
-      return [];
-    } catch (error) {
-      console.debug("Patrones en desarrollo:", error);
-      return [];
-    }
-  };
-
-  const getKeyLevels = async (data) => {
-    try {
-      // Por ahora, desactivamos los mensajes de error ya que es una funcionalidad en desarrollo
-      return [];
-    } catch (error) {
-      console.debug("Niveles clave en desarrollo:", error);
-      return [];
-    }
-  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', position: 'relative' }}>
