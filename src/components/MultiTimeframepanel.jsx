@@ -4,12 +4,12 @@ import { API_URL } from '../config/api';
 import { Card } from './ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
+const TIMEFRAMES = ['1m', '5m', '15m', '1h', '4h', '1d'];
+
 const MultiTimeframePanel = ({ symbol }) => {
   const [analysis, setAnalysis] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
 
   useEffect(() => {
     const fetchMultiTimeframeAnalysis = async () => {
@@ -18,7 +18,7 @@ const MultiTimeframePanel = ({ symbol }) => {
       setLoading(true);
       try {
         // Obtener análisis para cada timeframe individualmente
-        const analysisPromises = timeframes.map(async (timeframe) => {
+        const analysisPromises = TIMEFRAMES.map(async (timeframe) => {
           const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
           if (!response.ok) {
             throw new Error(`Error fetching analysis for ${timeframe}`);
@@ -35,7 +35,7 @@ const MultiTimeframePanel = ({ symbol }) => {
             const [timeframe, data] = result.value;
             analysisData[timeframe] = data;
           } else {
-            console.error(`Error fetching ${timeframes[index]}:`, result.reason);
+            console.error(`Error fetching ${TIMEFRAMES[index]}:`, result.reason);
           }
         });
 
@@ -98,12 +98,12 @@ const MultiTimeframePanel = ({ symbol }) => {
 
   return (
     <div className="space-y-4">
-      <Typography variant="h6" className="text-slate-200">
+      <Typography variant="h6" sx={{ color: '#eef2ff', mb: 1 }}>
         Multi Timeframe Analysis
       </Typography>
       
       <div className="grid gap-2">
-        {timeframes.map((tf) => (
+        {TIMEFRAMES.map((tf) => (
           <Card key={tf} className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

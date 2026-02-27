@@ -81,11 +81,11 @@ const TradingSuggestions = ({ symbol, timeframe }) => {
 
   return (
     <div className="space-y-4">
-      <Typography variant="h6" className="text-slate-200">
+      <Typography variant="h6" sx={{ color: '#eef2ff', mb: 1 }}>
         Trading Suggestions
       </Typography>
 
-      <Card className="p-4">
+      <Card className="p-5 border border-[#33466f]/60">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-indigo-500" />
