@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Stack, Typography } from '@mui/material';
 import IndicatorsPanel from './IndicatorsPanel';
 import MultiTimeframepanel from './MultiTimeframepanel';
 import TradingSuggestions from './TradingSuggestions';
@@ -10,6 +10,22 @@ import { Card } from './ui/card';
 const DEFAULT_SYMBOL = 'BTCUSDT';
 const DEFAULT_TIMEFRAME = '1h';
 
+const selectStyles = {
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(128, 152, 215, 0.4)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(53, 232, 255, 0.7)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#35e8ff',
+  },
+  '& .MuiSelect-select': {
+    color: '#f4f7ff',
+    fontWeight: 500,
+  },
+};
+
 const Dashboard = () => {
   const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
   const [timeframe, setTimeframe] = useState(DEFAULT_TIMEFRAME);
@@ -18,17 +34,14 @@ const Dashboard = () => {
   const [filteredSymbols, setFilteredSymbols] = useState([]);
 
   useEffect(() => {
-    // Fetch symbols from Binance API
     fetch('https://api.binance.com/api/v3/exchangeInfo')
-      .then(response => response.json())
-      .then(data => {
-        const pairs = data.symbols
-          .filter(s => s.status === 'TRADING')
-          .map(s => s.symbol);
+      .then((response) => response.json())
+      .then((data) => {
+        const pairs = data.symbols.filter((s) => s.status === 'TRADING').map((s) => s.symbol);
         setSymbols(pairs);
         setFilteredSymbols(pairs);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching symbols:', error);
         setSymbols([]);
         setFilteredSymbols([]);
@@ -37,146 +50,109 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered = symbols.filter(sym => 
-        sym.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const filtered = symbols.filter((sym) => sym.toLowerCase().includes(searchTerm.toLowerCase()));
       setFilteredSymbols(filtered);
     } else {
       setFilteredSymbols(symbols);
     }
   }, [searchTerm, symbols]);
 
-  const handleSymbolChange = (event) => {
-    setSymbol(event.target.value);
-  };
-
-  const handleTimeframeChange = (event) => {
-    setTimeframe(event.target.value);
-  };
-
   return (
-    <Box 
-      sx={{ 
-        width: '100vw',
+    <Box
+      sx={{
+        width: '100%',
         minHeight: '100vh',
-        backgroundColor: 'black',
         margin: 0,
-        padding: 0,
-        boxSizing: 'border-box',
-        overflowX: 'hidden'
+        pt: 2.5,
+        pb: 2,
+        pl: { xs: 2, md: 33 },
+        pr: 2,
       }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 w-full">
-        {/* Panel Principal con Gráfico */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
         <div className="lg:col-span-3 space-y-4">
-          <Card className="p-4">
-            <div className="flex flex-col space-y-4">
-              <div className="flex justify-between items-center">
-                <div className="flex-1">
-                  <FormControl fullWidth sx={{ backgroundColor: 'rgba(22, 22, 22, 0.9)', borderRadius: '12px' }}>
-                    <InputLabel>Symbol</InputLabel>
-                    <Select
-                      value={symbol}
-                      label="Symbol"
-                      onChange={handleSymbolChange}
-                      onOpen={() => setSearchTerm('')}
-                      MenuProps={{
-                        PaperProps: {
-                          style: {
-                            maxHeight: 300,
-                            backgroundColor: '#1a1a1a',
-                          },
+          <Card className="p-4 md:p-5">
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5} alignItems={{ xs: 'stretch', md: 'center' }}>
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ color: '#9eb0dd', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Symbol
+                </Typography>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: '#9eb0dd' }}>Symbol</InputLabel>
+                  <Select
+                    value={symbol}
+                    label="Symbol"
+                    onChange={(event) => setSymbol(event.target.value)}
+                    onOpen={() => setSearchTerm('')}
+                    sx={selectStyles}
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 320,
+                          backgroundColor: '#101626',
+                          border: '1px solid rgba(128, 152, 215, 0.2)',
                         },
-                        MenuListProps: {
-                          style: {
-                            backgroundColor: '#1a1a1a',
-                          }
-                        }
-                      }}
-                      displayEmpty
-                    >
-                      <MenuItem sx={{ backgroundColor: '#1a1a1a', '&:hover': { backgroundColor: '#2a2a2a' } }}>
-                        <input
-                          type="text"
-                          placeholder="Search symbol..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{
-                            width: '100%',
-                            padding: '8px',
-                            border: '1px solid #444',
-                            borderRadius: '4px',
-                            backgroundColor: '#222',
-                            color: 'white'
-                          }}
-                        />
+                      },
+                    }}
+                  >
+                    <MenuItem disableRipple sx={{ backgroundColor: '#101626 !important', p: 1.2 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Buscar par..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            color: '#f4f7ff',
+                            '& fieldset': { borderColor: 'rgba(128, 152, 215, 0.4)' },
+                          },
+                        }}
+                      />
+                    </MenuItem>
+                    {filteredSymbols.map((sym) => (
+                      <MenuItem key={sym} value={sym} sx={{ color: '#dce4ff', '&:hover': { backgroundColor: 'rgba(53, 80, 145, 0.2)' } }}>
+                        {sym}
                       </MenuItem>
-                      {filteredSymbols.map((sym) => (
-                        <MenuItem 
-                          key={sym} 
-                          value={sym}
-                          sx={{
-                            backgroundColor: '#1a1a1a',
-                            '&:hover': { backgroundColor: '#2a2a2a' },
-                            '&.Mui-selected': { backgroundColor: '#333' }
-                          }}
-                        >
-                          {sym}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                <div className="flex-1 ml-4">
-                  <FormControl fullWidth sx={{ backgroundColor: 'rgba(22, 22, 22, 0.9)', borderRadius: '12px' }}>
-                    <InputLabel>Timeframe</InputLabel>
-                    <Select
-                      value={timeframe}
-                      label="Timeframe"
-                      onChange={handleTimeframeChange}
-                    >
-                      <MenuItem value="1m">1m</MenuItem>
-                      <MenuItem value="5m">5m</MenuItem>
-                      <MenuItem value="15m">15m</MenuItem>
-                      <MenuItem value="1h">1h</MenuItem>
-                      <MenuItem value="4h">4h</MenuItem>
-                      <MenuItem value="1d">1d</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
-              </div>
-              <div className="flex flex-col w-full gap-8">
-                {/* Sección del gráfico */}
-                <div className="w-full">
-                  <TradingViewChart
-                    symbol={symbol}
-                    timeframe={timeframe}
-                  />
-                </div>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
 
-                {/* Sección de la tabla de criptomonedas */}
-                <div className="w-full mt-0">
-                  <TopCryptoTable />
-                </div>
+              <Box sx={{ flex: 1 }}>
+                <Typography sx={{ color: '#9eb0dd', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Timeframe
+                </Typography>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: '#9eb0dd' }}>Timeframe</InputLabel>
+                  <Select value={timeframe} label="Timeframe" onChange={(event) => setTimeframe(event.target.value)} sx={selectStyles}>
+                    <MenuItem value="1m">1m</MenuItem>
+                    <MenuItem value="5m">5m</MenuItem>
+                    <MenuItem value="15m">15m</MenuItem>
+                    <MenuItem value="1h">1h</MenuItem>
+                    <MenuItem value="4h">4h</MenuItem>
+                    <MenuItem value="1d">1d</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Stack>
+
+            <div className="flex flex-col w-full gap-6 mt-6">
+              <div className="w-full">
+                <TradingViewChart symbol={symbol} timeframe={timeframe} />
+              </div>
+              <div className="w-full mt-0">
+                <TopCryptoTable />
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Panel Lateral */}
         <div className="space-y-4">
-          <IndicatorsPanel 
-            symbol={symbol} 
-            timeframe={timeframe}
-          />
-          <TradingSuggestions 
-            symbol={symbol}
-            timeframe={timeframe}
-          />
-          <MultiTimeframepanel 
-            symbol={symbol}
-          />
+          <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
+          <TradingSuggestions symbol={symbol} timeframe={timeframe} />
+          <MultiTimeframepanel symbol={symbol} />
         </div>
       </div>
     </Box>

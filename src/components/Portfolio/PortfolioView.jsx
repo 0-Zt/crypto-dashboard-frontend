@@ -19,7 +19,7 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-react';
-import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { getCurrentPrice } from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -28,12 +28,6 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
   const { user } = useAuth();
   const [portfolio, setPortfolio] = useState([]);
   const [currentPrices, setCurrentPrices] = useState({});
-  const [newAsset, setNewAsset] = useState({
-    symbol: '',
-    quantity: '',
-    purchasePrice: '',
-  });
-
   const fetchPortfolio = useCallback(async () => {
     if (!user) return;
     
@@ -111,27 +105,6 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
     }
   }, [portfolio, fetchPrices, onUpdateTotalValue]);
 
-  const handleAddAsset = async () => {
-    if (!user || !newAsset.symbol || !newAsset.quantity || !newAsset.purchasePrice) return;
-
-    try {
-      const assetData = {
-        symbol: newAsset.symbol.toUpperCase(),
-        quantity: parseFloat(newAsset.quantity),
-        purchasePrice: parseFloat(newAsset.purchasePrice),
-        timestamp: new Date().toISOString()
-      };
-
-      // Agregar a la subcolección assets bajo el userId
-      const portfolioRef = collection(db, 'portfolios', user.uid, 'assets');
-      await addDoc(portfolioRef, assetData);
-      setNewAsset({ symbol: '', quantity: '', purchasePrice: '' });
-      await fetchPortfolio();
-    } catch (error) {
-      console.error('Error adding asset:', error);
-    }
-  };
-
   const handleDelete = async (id) => {
     try {
       // Eliminar de la subcolección assets bajo el userId
@@ -143,17 +116,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
     }
   };
 
-  const handleOpenDialog = (asset = null) => {
-    if (asset) {
-      setNewAsset({
-        symbol: asset.symbol,
-        quantity: asset.quantity.toString(),
-        purchasePrice: asset.purchasePrice.toString(),
-      });
-    } else {
-      setNewAsset({ symbol: '', quantity: '', purchasePrice: '' });
-    }
-  };
+  const handleOpenDialog = () => {};
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -165,7 +128,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
+            onClick={handleOpenDialog}
             sx={{
               backgroundColor: 'rgba(0, 242, 234, 0.1)',
               color: '#00f2ea',
@@ -239,7 +202,7 @@ const PortfolioView = ({ onUpdateTotalValue }) => {
                     <TableCell>
                       <Tooltip title="Editar">
                         <IconButton
-                          onClick={() => handleOpenDialog(asset)}
+                          onClick={handleOpenDialog}
                           sx={{ 
                             color: '#00f2ea',
                             '&:hover': { backgroundColor: 'rgba(0, 242, 234, 0.1)' }

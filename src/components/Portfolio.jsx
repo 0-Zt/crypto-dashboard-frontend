@@ -1,11 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { Box, Grid, Card, Typography, Button, Container } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { Box, Grid, Card, Typography, Container } from '@mui/material';
 import PortfolioView from './Portfolio/PortfolioView';
 import { TrendingUp, TrendingDown, PieChart } from 'lucide-react';
 
 const Portfolio = () => {
-  const { user, logout } = useAuth();
   const [portfolioStats, setPortfolioStats] = useState({
     totalValue: 0,
     totalProfit: 0,
