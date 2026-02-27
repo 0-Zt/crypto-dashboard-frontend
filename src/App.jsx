@@ -42,6 +42,15 @@ const darkTheme = createTheme({
       letterSpacing: '-0.01em',
     },
   },
+  shape: {
+    borderRadius: 14,
+  },
+  typography: {
+    fontFamily: ['Inter', 'SF Pro Display', 'system-ui', '-apple-system', 'sans-serif'].join(','),
+    h5: { fontWeight: 700, letterSpacing: '-0.015em' },
+    h6: { fontWeight: 700, letterSpacing: '-0.015em' },
+    button: { textTransform: 'none', fontWeight: 600 },
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {

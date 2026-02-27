@@ -103,8 +103,8 @@ const InfoDialog = ({ open, onClose }) => {
       fullWidth
       PaperProps={{
         style: {
-          backgroundColor: '#0f0f0f',
-          border: '1px solid #1F1F22',
+          background: 'linear-gradient(145deg, rgba(15,22,41,.97), rgba(10,14,25,.98))',
+          border: '1px solid rgba(117, 139, 199, 0.28)',
           borderRadius: '16px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
           color: '#fff'
@@ -117,7 +117,7 @@ const InfoDialog = ({ open, onClose }) => {
         }
       }}
     >
-      <div className="border-b border-[#1F1F22]">
+      <div className="border-b border-[#28365b]">
         <DialogTitle className="flex justify-between items-center text-xl font-semibold text-white px-6 py-4">
           Guía de Indicadores y Análisis Técnico
           <IconButton 
@@ -139,7 +139,7 @@ const InfoDialog = ({ open, onClose }) => {
           {indicators.map((indicator, index) => (
             <div
               key={index}
-              className="bg-[#1a1a1a] border border-[#1F1F22] rounded-xl p-5 shadow-lg hover:bg-[#222] transition-colors duration-200"
+              className="bg-[#111a30] border border-[#2b3a62] rounded-xl p-5 shadow-lg hover:bg-[#17213d] transition-colors duration-200"
             >
               <div className="flex items-center gap-3 mb-3">
                 {indicator.icon}

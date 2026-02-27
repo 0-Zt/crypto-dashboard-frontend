@@ -98,7 +98,7 @@ const MultiTimeframePanel = ({ symbol }) => {
 
   return (
     <div className="space-y-4">
-      <Typography variant="h6" className="text-slate-200">
+      <Typography variant="h6" sx={{ color: '#eef2ff', mb: 1 }}>
         Multi Timeframe Analysis
       </Typography>
       

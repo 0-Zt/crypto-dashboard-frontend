@@ -134,7 +134,7 @@ const IndicatorsPanel = ({ symbol, timeframe }) => {
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-medium text-white">Indicators</h2>
+          <h2 className="text-xl font-semibold text-[#eef2ff]">Indicators</h2>
           <span className={`text-sm px-3 py-1 rounded-full ${getTrendColor(trend)}`}>
             {trend?.replace('_', ' ') || 'NEUTRAL'}
           </span>
