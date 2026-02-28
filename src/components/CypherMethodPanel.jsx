@@ -55,6 +55,12 @@ export default function CypherMethodPanel({ symbol }) {
 
         <div className="text-slate-400">4h WT1 / WT2</div>
         <div className="text-slate-200 text-right">{data?.frame4h?.wt1?.toFixed?.(1) ?? '-'} / {data?.frame4h?.wt2?.toFixed?.(1) ?? '-'}</div>
+
+        <div className="text-slate-400">4h Stoch K / D</div>
+        <div className="text-slate-200 text-right">{data?.frame4h?.stochK?.toFixed?.(1) ?? '-'} / {data?.frame4h?.stochD?.toFixed?.(1) ?? '-'}</div>
+
+        <div className="text-slate-400">4h STC</div>
+        <div className="text-slate-200 text-right">{data?.frame4h?.stc?.toFixed?.(1) ?? '-'}</div>
       </div>
 
       {Array.isArray(data?.reasons) && data.reasons.length > 0 && (

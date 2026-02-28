@@ -120,6 +120,10 @@ const InfoDialog = ({ open, onClose }) => {
       title: 'WT Divergences',
       text: 'Divergencias entre precio y WaveTrend (regular/hidden) pueden anticipar reversión o continuación. Son un extra de calidad de setup.',
     },
+    {
+      title: 'Stoch RSI + STC',
+      text: 'Se usan como filtro de momentum: en largos buscamos K>=D y STC fuerte; en cortos K<=D y STC débil. Ayudan a evitar entradas prematuras.',
+    },
   ];
 
   return (
