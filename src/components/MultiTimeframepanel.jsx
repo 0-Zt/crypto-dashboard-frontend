@@ -1,56 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
-import { API_URL } from '../config/api';
 import { Card } from './ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-
-const TIMEFRAMES = ['1m', '5m', '15m', '1h', '4h', '1d'];
+import { useMultiTimeframeAnalysis } from '../hooks/useAnalysis';
 
 const MultiTimeframePanel = ({ symbol }) => {
-  const [analysis, setAnalysis] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchMultiTimeframeAnalysis = async () => {
-      if (!symbol) return;
-      
-      setLoading(true);
-      try {
-        // Obtener análisis para cada timeframe individualmente
-        const analysisPromises = TIMEFRAMES.map(async (timeframe) => {
-          const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
-          if (!response.ok) {
-            throw new Error(`Error fetching analysis for ${timeframe}`);
-          }
-          const data = await response.json();
-          return [timeframe, data.analysis];
-        });
-
-        const results = await Promise.allSettled(analysisPromises);
-        const analysisData = {};
-        
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled') {
-            const [timeframe, data] = result.value;
-            analysisData[timeframe] = data;
-          } else {
-            console.error(`Error fetching ${TIMEFRAMES[index]}:`, result.reason);
-          }
-        });
-
-        setAnalysis(analysisData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching multi-timeframe analysis:', err);
-        setError('Error loading analysis');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMultiTimeframeAnalysis();
-  }, [symbol]);
+  const { timeframes, analysisByTimeframe: analysis, isLoading: loading, isError: error } = useMultiTimeframeAnalysis(symbol);
 
   if (loading) {
     return (
@@ -103,7 +58,7 @@ const MultiTimeframePanel = ({ symbol }) => {
       </Typography>
       
       <div className="grid gap-2">
-        {TIMEFRAMES.map((tf) => (
+        {timeframes.map((tf) => (
           <Card key={tf} className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

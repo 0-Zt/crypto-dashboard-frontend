@@ -22,37 +22,28 @@ Aplicación profesional para análisis técnico de criptomonedas con indicadores
 - numpy
 
 ### Frontend
-- Node.js 16+
+- Node.js 18+
 - React 18
+- Vite
 - TradingView Lightweight Charts
 - Material-UI
-- Axios
+- TanStack Query
 
 ## Instalación
 
-1. Clonar el repositorio
-2. Instalar dependencias del backend:
 ```bash
-cd backend
-pip install -r requirements.txt
-```
-
-3. Instalar dependencias del frontend:
-```bash
-cd frontend
 npm install
 ```
 
 ## Ejecución
 
-1. Iniciar el backend:
 ```bash
-cd backend
-uvicorn main:app --reload
+npm run dev
 ```
 
-2. Iniciar el frontend:
+## Build producción
+
 ```bash
-cd frontend
-npm start
+npm run build
+npm run preview
 ```

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Stack, Typography } from '@mui/material';
 import IndicatorsPanel from './IndicatorsPanel';
 import MultiTimeframepanel from './MultiTimeframepanel';
@@ -6,6 +6,7 @@ import TradingSuggestions from './TradingSuggestions';
 import TopCryptoTable from './TopCryptoTable';
 import TradingViewChart from './TradingViewChart';
 import { Card } from './ui/card';
+import { useSymbols } from '../hooks/useSymbols';
 
 const DEFAULT_SYMBOL = 'BTCUSDT';
 const DEFAULT_TIMEFRAME = '1h';
@@ -29,32 +30,12 @@ const selectStyles = {
 const Dashboard = () => {
   const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
   const [timeframe, setTimeframe] = useState(DEFAULT_TIMEFRAME);
-  const [symbols, setSymbols] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredSymbols, setFilteredSymbols] = useState([]);
+  const { data: symbols = [] } = useSymbols();
 
-  useEffect(() => {
-    fetch('https://api.binance.com/api/v3/exchangeInfo')
-      .then((response) => response.json())
-      .then((data) => {
-        const pairs = data.symbols.filter((s) => s.status === 'TRADING').map((s) => s.symbol);
-        setSymbols(pairs);
-        setFilteredSymbols(pairs);
-      })
-      .catch((error) => {
-        console.error('Error fetching symbols:', error);
-        setSymbols([]);
-        setFilteredSymbols([]);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = symbols.filter((sym) => sym.toLowerCase().includes(searchTerm.toLowerCase()));
-      setFilteredSymbols(filtered);
-    } else {
-      setFilteredSymbols(symbols);
-    }
+  const filteredSymbols = useMemo(() => {
+    if (!searchTerm) return symbols;
+    return symbols.filter((sym) => sym.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm, symbols]);
 
   return (
@@ -63,10 +44,10 @@ const Dashboard = () => {
         width: '100%',
         minHeight: '100vh',
         margin: 0,
-        pt: 2.5,
-        pb: 2,
-        pl: { xs: 2, md: 33 },
-        pr: 2,
+        pt: { xs: 10, md: 11 },
+        pb: 3,
+        pl: { xs: 1.5, md: 32 },
+        pr: { xs: 1.5, md: 2.5 },
       }}
     >
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">

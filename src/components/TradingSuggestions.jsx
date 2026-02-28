@@ -1,43 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
-import { API_URL } from '../config/api';
 import { Card } from './ui/card';
 import { TrendingUp, TrendingDown, Target, AlertTriangle } from 'lucide-react';
+import { useAnalysis } from '../hooks/useAnalysis';
 
 const TradingSuggestions = ({ symbol, timeframe }) => {
-  const [suggestion, setSuggestion] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchSuggestion = async () => {
-      if (!symbol) return;
-      
-      setLoading(true);
-      try {
-        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
-        if (!response.ok) {
-          throw new Error('Error fetching trading suggestion');
-        }
-        const data = await response.json();
-        setSuggestion(data.suggestion || {
-          type: 'NEUTRAL',
-          message: 'No hay señal clara de trading en este momento',
-          confidence: 0,
-          risk: 'N/A'
-        });
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching suggestion:', err);
-        setError('Error loading trading suggestion');
-        setSuggestion(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSuggestion();
-  }, [symbol, timeframe]);
+  const { data, isLoading: loading, error } = useAnalysis(symbol, timeframe);
+  const suggestion = data?.suggestion || {
+    type: 'NEUTRAL',
+    message: 'No hay señal clara de trading en este momento',
+    confidence: 0,
+    risk: 'N/A',
+  };
 
   if (loading) {
     return (
@@ -50,12 +24,10 @@ const TradingSuggestions = ({ symbol, timeframe }) => {
   if (error) {
     return (
       <Box sx={{ color: 'error.main', p: 2, textAlign: 'center' }}>
-        {error}
+        {error?.message || 'Error loading trading suggestion'}
       </Box>
     );
   }
-
-  if (!suggestion) return null;
 
   const getTypeColor = (type) => {
     switch (type) {

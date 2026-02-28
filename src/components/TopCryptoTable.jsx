@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -7,55 +7,12 @@ import {
 } from '@mui/material';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card } from './ui/card';
+import { useTopCryptos } from '../hooks/useTopCryptos';
 
 const TopCryptoTable = () => {
-  const [cryptoData, setCryptoData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: cryptoData = [], isLoading: loading, error } = useTopCryptos();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(6);
-
-  useEffect(() => {
-    const fetchTopCryptos = async () => {
-      try {
-        setLoading(true);
-        
-        // Obtener datos de Binance
-        const binanceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-        const binanceData = await binanceResponse.json();
-        
-        // Filtrar y ordenar por volumen en USD
-        const usdtPairs = binanceData
-          .filter(pair => pair.symbol.endsWith('USDT'))
-          .map(crypto => {
-            const price = parseFloat(crypto.lastPrice);
-            const volume = parseFloat(crypto.volume);
-            const quoteVolume = parseFloat(crypto.quoteVolume); // Volumen en USDT
-            return {
-              ...crypto,
-              name: crypto.symbol.replace('USDT', ''),
-              image: `https://lcw.nyc3.cdn.digitaloceanspaces.com/production/currencies/64/${crypto.symbol.replace('USDT', '').toLowerCase()}.png`,
-              price,
-              volume,
-              quoteVolume
-            };
-          })
-          .sort((a, b) => b.quoteVolume - a.quoteVolume)
-          .slice(0, 25); // Tomar los top 25 para tener suficientes para la paginación
-        
-        setCryptoData(usdtPairs);
-      } catch (err) {
-        setError('Error al cargar datos');
-        console.error('Error fetching crypto data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTopCryptos();
-    const interval = setInterval(fetchTopCryptos, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -80,7 +37,7 @@ const TopCryptoTable = () => {
     return (
       <Card className="w-full h-[300px] overflow-hidden bg-[#0f0f0f]">
         <Box p={2} textAlign="center">
-          <Typography color="error">{error}</Typography>
+          <Typography color="error">{error?.message || 'Error al cargar datos'}</Typography>
         </Box>
       </Card>
     );

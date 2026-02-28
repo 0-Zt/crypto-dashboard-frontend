@@ -1,6 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
+import { queryClient } from './lib/queryClient';
 
 // Cargar la aplicación de manera diferida
 const App = React.lazy(() => import('./App'));
@@ -30,8 +32,10 @@ const LoadingFallback = () => (
 const root = createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <React.Suspense fallback={<LoadingFallback />}>
-      <App />
-    </React.Suspense>
+    <QueryClientProvider client={queryClient}>
+      <React.Suspense fallback={<LoadingFallback />}>
+        <App />
+      </React.Suspense>
+    </QueryClientProvider>
   </React.StrictMode>
 );

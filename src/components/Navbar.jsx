@@ -187,7 +187,7 @@ const Navbar = () => {
           </Typography>
         </Box>
         <Divider sx={{ borderColor: 'rgba(116, 138, 199, 0.24)' }} />
-        <MenuItem component={NavLink} to="/profile">
+        <MenuItem component={NavLink} to="/portfolio">
           <ListItemIcon>
             <User className="w-5 h-5 text-slate-300" />
           </ListItemIcon>

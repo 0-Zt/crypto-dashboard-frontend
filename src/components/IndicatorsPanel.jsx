@@ -1,51 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Box, CircularProgress } from '@mui/material';
-import { API_URL } from '../config/api';
 import { Card, CardContent } from './ui/card';
 import {
   Activity,
   BarChart2,
 } from 'lucide-react';
 import { getAnalysisTimeframe } from '../utils/timeframeUtils';
+import { useAnalysis } from '../hooks/useAnalysis';
 
 const IndicatorsPanel = ({ symbol, timeframe }) => {
-  const [analysisData, setAnalysisData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchAnalysis = async () => {
-      if (!symbol) return;
-      
-      setLoading(true);
-      setError(null);
-      try {
-        // Convertir el timeframe al formato correcto para el análisis
-        const analysisTimeframe = getAnalysisTimeframe(timeframe);
-        console.log('Fetching analysis for:', symbol, 'with timeframe:', analysisTimeframe);
-        
-        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${analysisTimeframe}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('Analysis response:', data);
-        
-        if (!data || !data.analysis || !data.analysis.indicators) {
-          throw new Error('Invalid data structure');
-        }
-        
-        setAnalysisData(data.analysis);
-      } catch (err) {
-        console.error('Error fetching analysis:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnalysis();
-  }, [symbol, timeframe]);
+  const { data, isLoading: loading, error } = useAnalysis(symbol, timeframe);
+  const analysisData = data?.analysis || null;
 
   const formatNumber = (value) => {
     if (value === undefined || value === null || isNaN(value)) return '0.00';
@@ -101,7 +66,7 @@ const IndicatorsPanel = ({ symbol, timeframe }) => {
       <Card className="w-full">
         <CardContent className="p-6">
           <Box sx={{ color: 'error.main', p: 2, textAlign: 'center' }}>
-            Error: {error}
+            Error: {error?.message || 'No se pudo cargar el análisis'}
           </Box>
         </CardContent>
       </Card>
