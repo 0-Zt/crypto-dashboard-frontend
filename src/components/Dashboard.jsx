@@ -50,6 +50,15 @@ const Dashboard = () => {
         pr: { xs: 1.5, md: 2.5 },
       }}
     >
+      <Box sx={{ mb: 2.5 }}>
+        <Typography sx={{ color: '#eef2ff', fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
+          Market Dashboard
+        </Typography>
+        <Typography sx={{ color: '#9fb0db', fontSize: 13 }}>
+          Seguimiento en tiempo real con señales, contexto multi-timeframe y ranking por volumen.
+        </Typography>
+      </Box>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
         <div className="lg:col-span-3 space-y-4">
           <Card className="p-4 md:p-5">
@@ -130,7 +139,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 lg:sticky lg:top-24 self-start">
           <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
           <TradingSuggestions symbol={symbol} timeframe={timeframe} />
           <MultiTimeframepanel symbol={symbol} />

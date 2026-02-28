@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, Skeleton } from '@mui/material';
 import { Card } from './ui/card';
 import { TrendingUp, TrendingDown, Target, AlertTriangle } from 'lucide-react';
 import { useAnalysis } from '../hooks/useAnalysis';
@@ -15,9 +15,12 @@ const TradingSuggestions = ({ symbol, timeframe }) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-        <CircularProgress />
-      </Box>
+      <Card className="p-5 border border-[#33466f]/40 space-y-3">
+        <Skeleton variant="text" width={180} height={30} sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+        ))}
+      </Card>
     );
   }
 

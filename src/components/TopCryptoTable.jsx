@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  CircularProgress,
+  Skeleton,
   TablePagination,
 } from '@mui/material';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
@@ -25,10 +25,18 @@ const TopCryptoTable = () => {
 
   if (loading) {
     return (
-      <Card className="w-full h-[300px] overflow-hidden bg-[#0f0f0f]">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
-          <CircularProgress sx={{ color: '#00f2ea' }} />
-        </Box>
+      <Card className="w-full p-4 md:p-5">
+        <Skeleton variant="text" width={180} height={34} sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
+        <Skeleton variant="text" width={320} height={22} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.08)' }} />
+        {[...Array(6)].map((_, i) => (
+          <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '40px 1fr 1fr 1fr 1fr', gap: 1.2, py: 1 }}>
+            <Skeleton variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+            <Skeleton variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+            <Skeleton variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+            <Skeleton variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+            <Skeleton variant="rounded" height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+          </Box>
+        ))}
       </Card>
     );
   }

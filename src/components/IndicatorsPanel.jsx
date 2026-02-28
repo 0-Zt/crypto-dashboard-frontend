@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import { Card, CardContent } from './ui/card';
 import {
   Activity,
@@ -52,10 +52,11 @@ const IndicatorsPanel = ({ symbol, timeframe }) => {
   if (loading) {
     return (
       <Card className="w-full">
-        <CardContent className="p-6">
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-            <CircularProgress />
-          </Box>
+        <CardContent className="p-6 space-y-3">
+          <Skeleton variant="text" width={160} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.12)' }} />
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} variant="rounded" height={28} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+          ))}
         </CardContent>
       </Card>
     );

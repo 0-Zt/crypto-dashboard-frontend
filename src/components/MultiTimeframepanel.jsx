@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, Skeleton } from '@mui/material';
 import { Card } from './ui/card';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useMultiTimeframeAnalysis } from '../hooks/useAnalysis';
@@ -9,9 +9,11 @@ const MultiTimeframePanel = ({ symbol }) => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-        <CircularProgress />
-      </Box>
+      <div className="space-y-2">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} variant="rounded" height={42} sx={{ bgcolor: 'rgba(255,255,255,0.08)' }} />
+        ))}
+      </div>
     );
   }
 
