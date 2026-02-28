@@ -87,6 +87,16 @@ export default function CypherMethodPanel({ symbol }) {
         <div className="text-slate-200 text-right">
           {data?.wtDivergences?.bullishRegular ? 'Bull Reg' : data?.wtDivergences?.bearishRegular ? 'Bear Reg' : '—'}
         </div>
+
+        <div className="text-slate-400">RSI Divergence</div>
+        <div className="text-slate-200 text-right">
+          {data?.rsiDivergences?.bullishRegular ? 'Bull Reg' : data?.rsiDivergences?.bearishRegular ? 'Bear Reg' : '—'}
+        </div>
+
+        <div className="text-slate-400">Stoch Divergence</div>
+        <div className="text-slate-200 text-right">
+          {data?.stochDivergences?.bullishRegular ? 'Bull Reg' : data?.stochDivergences?.bearishRegular ? 'Bear Reg' : '—'}
+        </div>
       </div>
     </Card>
   );
