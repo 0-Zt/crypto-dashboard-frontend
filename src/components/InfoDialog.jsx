@@ -108,6 +108,10 @@ const InfoDialog = ({ open, onClose }) => {
       title: 'Risk:Reward (R:R)',
       text: 'Relación riesgo/beneficio estimada entre entrada, stop y target. R:R mayor (ej. 1.8+) suele ser más favorable.',
     },
+    {
+      title: 'Cypher 4h-first',
+      text: 'Método principal en 4h: esperar sobrecompra/sobreventa + cruce WT + confirmación MFI/VWAP. Solo bajar a 2h si la tendencia de 4h es clara para continuación.',
+    },
   ];
 
   return (

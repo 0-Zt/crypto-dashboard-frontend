@@ -3,6 +3,7 @@ import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Stack, Typog
 import IndicatorsPanel from './IndicatorsPanel';
 import MultiTimeframepanel from './MultiTimeframepanel';
 import TradingSuggestions from './TradingSuggestions';
+import CypherMethodPanel from './CypherMethodPanel';
 import TopCryptoTable from './TopCryptoTable';
 import TradingViewChart from './TradingViewChart';
 import { Card } from './ui/card';
@@ -140,6 +141,7 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-24 self-start">
+          <CypherMethodPanel symbol={symbol} />
           <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
           <TradingSuggestions symbol={symbol} timeframe={timeframe} />
           <MultiTimeframepanel symbol={symbol} />
