@@ -46,7 +46,7 @@ const Dashboard = () => {
         margin: 0,
         pt: { xs: 10, md: 11 },
         pb: 3,
-        pl: { xs: 1.5, md: 32 },
+        pl: { xs: 1.5, md: 10.5 },
         pr: { xs: 1.5, md: 2.5 },
       }}
     >

@@ -33,7 +33,7 @@ const Portfolio = () => {
     }).format(value);
 
   return (
-    <Box sx={{ minHeight: '100vh', width: '100%', pt: 2.5, pb: 4, pl: { xs: 2, md: 33 }, pr: 2 }}>
+    <Box sx={{ minHeight: '100vh', width: '100%', pt: { xs: 10, md: 11 }, pb: 4, pl: { xs: 1.5, md: 10.5 }, pr: { xs: 1.5, md: 2.5 } }}>
       <Container maxWidth="xl" sx={{ px: '0 !important' }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h5" sx={{ color: '#eef2ff', mb: 0.5 }}>
