@@ -85,6 +85,23 @@ const TradingSuggestions = ({ symbol, timeframe }) => {
               </div>
 
               <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Signal Score</span>
+                <span className="text-slate-200">{suggestion.signalScore ?? '-'} / 100</span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-400">Market Regime</span>
+                <span className="text-slate-200">{suggestion.regime || 'N/A'}</span>
+              </div>
+
+              {suggestion.riskReward && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-400">R:R (target1)</span>
+                  <span className="text-slate-200">{suggestion.riskReward}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400">Risk Level</span>
                 <span className="text-slate-200">{suggestion.risk}</span>
               </div>
@@ -111,6 +128,15 @@ const TradingSuggestions = ({ symbol, timeframe }) => {
                       <span className="text-slate-400">Target {index + 1}</span>
                       <span className="text-emerald-500">${target}</span>
                     </div>
+                  ))}
+                </div>
+              )}
+
+              {Array.isArray(suggestion.reasons) && suggestion.reasons.length > 0 && (
+                <div className="space-y-1 pt-1">
+                  <span className="text-sm text-slate-400">Why this signal:</span>
+                  {suggestion.reasons.map((reason, idx) => (
+                    <div key={idx} className="text-xs text-slate-300">• {reason}</div>
                   ))}
                 </div>
               )}

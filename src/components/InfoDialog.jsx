@@ -95,6 +95,21 @@ const InfoDialog = ({ open, onClose }) => {
     }
   ];
 
+  const signalConcepts = [
+    {
+      title: 'Signal Score (0-100)',
+      text: 'Puntaje compuesto que resume tendencia + momentum + contexto. Sobre 70 suele indicar señal más fuerte; bajo 55, conviene prudencia.',
+    },
+    {
+      title: 'Market Regime',
+      text: 'Detecta si el mercado está en tendencia (TRENDING) o lateral (RANGING). En lateral, aumentan señales falsas.',
+    },
+    {
+      title: 'Risk:Reward (R:R)',
+      text: 'Relación riesgo/beneficio estimada entre entrada, stop y target. R:R mayor (ej. 1.8+) suele ser más favorable.',
+    },
+  ];
+
   return (
     <Dialog
       open={open}
@@ -136,6 +151,18 @@ const InfoDialog = ({ open, onClose }) => {
       </div>
       <DialogContent className="px-6 py-6">
         <div className="space-y-6">
+          <div className="bg-[#101a31] border border-[#2b3a62] rounded-xl p-5">
+            <h3 className="text-lg font-semibold text-white mb-3">Cómo leer la señal de trading</h3>
+            <div className="space-y-2">
+              {signalConcepts.map((item, idx) => (
+                <div key={idx} className="text-sm text-gray-300">
+                  <span className="text-white font-medium">{item.title}: </span>
+                  {item.text}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {indicators.map((indicator, index) => (
             <div
               key={index}
