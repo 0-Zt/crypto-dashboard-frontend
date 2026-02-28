@@ -1,149 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
-import { API_URL } from '../config/api';
-import { Card } from './ui/card';
+import React from 'react';
+import { Alert, Box, Chip, CircularProgress, Typography } from '@mui/material';
 import { TrendingUp, TrendingDown, Target, AlertTriangle } from 'lucide-react';
+import { Card } from './ui/card';
+import { useAnalysisQuery } from '../hooks/useMarketData';
 
 const TradingSuggestions = ({ symbol, timeframe }) => {
-  const [suggestion, setSuggestion] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchSuggestion = async () => {
-      if (!symbol) return;
-      
-      setLoading(true);
-      try {
-        const response = await fetch(`${API_URL}/api/analysis/${symbol}?interval=${timeframe}`);
-        if (!response.ok) {
-          throw new Error('Error fetching trading suggestion');
-        }
-        const data = await response.json();
-        setSuggestion(data.suggestion || {
-          type: 'NEUTRAL',
-          message: 'No hay señal clara de trading en este momento',
-          confidence: 0,
-          risk: 'N/A'
-        });
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching suggestion:', err);
-        setError('Error loading trading suggestion');
-        setSuggestion(null);
-      } finally {
-        setLoading(false);
-      }
+  const { data, isLoading, error } = useAnalysisQuery(symbol, timeframe);
+  const suggestion =
+    data?.suggestion || {
+      type: 'NEUTRAL',
+      message: 'No hay señal clara de trading en este momento',
+      confidence: 0,
+      risk: 'N/A',
     };
 
-    fetchSuggestion();
-  }, [symbol, timeframe]);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
-        <CircularProgress />
-      </Box>
+      <Card className="p-5">
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+          <CircularProgress />
+        </Box>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ color: 'error.main', p: 2, textAlign: 'center' }}>
-        {error}
-      </Box>
+      <Card className="p-4">
+        <Alert severity="error">Error cargando sugerencias de trading.</Alert>
+      </Card>
     );
   }
 
-  if (!suggestion) return null;
-
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 'LONG':
-        return 'text-emerald-500';
-      case 'SHORT':
-        return 'text-rose-500';
-      default:
-        return 'text-amber-500';
-    }
-  };
-
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'LONG':
-        return <TrendingUp className="w-5 h-5 text-emerald-500" />;
-      case 'SHORT':
-        return <TrendingDown className="w-5 h-5 text-rose-500" />;
-      default:
-        return <AlertTriangle className="w-5 h-5 text-amber-500" />;
-    }
-  };
+  const chipColor = suggestion.type === 'LONG' ? 'success' : suggestion.type === 'SHORT' ? 'error' : 'warning';
+  const icon = suggestion.type === 'LONG' ? <TrendingUp size={16} /> : suggestion.type === 'SHORT' ? <TrendingDown size={16} /> : <AlertTriangle size={16} />;
 
   return (
-    <div className="space-y-4">
-      <Typography variant="h6" sx={{ color: '#eef2ff', mb: 1 }}>
+    <Box>
+      <Typography variant="h6" sx={{ color: 'text.primary', mb: 1 }}>
         Trading Suggestions
       </Typography>
+      <Card className="p-5">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Target size={16} color="#8a7dff" />
+            <Typography sx={{ color: 'text.primary' }}>Signal</Typography>
+          </Box>
+          <Chip icon={icon} label={suggestion.type} color={chipColor} size="small" />
+        </Box>
 
-      <Card className="p-5 border border-[#33466f]/60">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-indigo-500" />
-            <span className="text-slate-200">Signal</span>
-          </div>
-          <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getTypeColor(suggestion.type)} bg-slate-800/50`}>
-            {getTypeIcon(suggestion.type)}
-            <span className="text-sm font-medium">{suggestion.type}</span>
-          </div>
-        </div>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1.5 }}>
+          {suggestion.message}
+        </Typography>
 
-        <div className="space-y-3">
-          <div className="text-sm text-slate-300">
-            {suggestion.message}
-          </div>
-
-          {suggestion.type !== 'NEUTRAL' && (
-            <>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400">Confidence</span>
-                <span className="text-slate-200">{suggestion.confidence}%</span>
-              </div>
-
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400">Risk Level</span>
-                <span className="text-slate-200">{suggestion.risk}</span>
-              </div>
-
-              {suggestion.entry && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Entry Price</span>
-                  <span className="text-slate-200">${suggestion.entry}</span>
-                </div>
-              )}
-
-              {suggestion.stopLoss && (
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-400">Stop Loss</span>
-                  <span className="text-rose-500">${suggestion.stopLoss}</span>
-                </div>
-              )}
-
-              {suggestion.targets && suggestion.targets.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-sm text-slate-400">Targets:</span>
-                  {suggestion.targets.map((target, index) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
-                      <span className="text-slate-400">Target {index + 1}</span>
-                      <span className="text-emerald-500">${target}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        {suggestion.type !== 'NEUTRAL' && (
+          <Box sx={{ display: 'grid', gap: 0.8 }}>
+            <Typography sx={{ color: 'text.secondary' }}>Confidence: <Box component="span" sx={{ color: 'text.primary' }}>{suggestion.confidence}%</Box></Typography>
+            <Typography sx={{ color: 'text.secondary' }}>Risk Level: <Box component="span" sx={{ color: 'text.primary' }}>{suggestion.risk}</Box></Typography>
+            {suggestion.entry && <Typography sx={{ color: 'text.secondary' }}>Entry: <Box component="span" sx={{ color: 'text.primary' }}>${suggestion.entry}</Box></Typography>}
+            {suggestion.stopLoss && <Typography sx={{ color: '#ff6b87' }}>Stop Loss: ${suggestion.stopLoss}</Typography>}
+            {suggestion.targets?.map((target, idx) => (
+              <Typography key={idx} sx={{ color: '#24d69a' }}>Target {idx + 1}: ${target}</Typography>
+            ))}
+          </Box>
+        )}
       </Card>
-    </div>
+    </Box>
   );
 };
 

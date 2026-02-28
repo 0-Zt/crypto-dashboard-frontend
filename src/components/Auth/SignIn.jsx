@@ -15,7 +15,6 @@ const SignIn = () => {
       // Obtener el token de ID para enviarlo al backend
       const idToken = await user.getIdToken();
       localStorage.setItem('authToken', idToken);
-      console.log('Usuario autenticado:', user.email);
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
     }
