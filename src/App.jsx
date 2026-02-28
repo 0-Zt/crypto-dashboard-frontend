@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import Portfolio from './components/Portfolio';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/Login';
+import ProfilePlaceholder from './components/ProfilePlaceholder';
 
 const darkTheme = createTheme({
   palette: {
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/profile" element={<ProfilePlaceholder />} />
       </Routes>
     </Box>
   );

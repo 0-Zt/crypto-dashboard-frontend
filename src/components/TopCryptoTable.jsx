@@ -1,76 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
+  Avatar,
   Box,
-  Typography,
   CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
   TablePagination,
+  TableRow,
+  Typography,
+  Alert,
 } from '@mui/material';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card } from './ui/card';
+import { useTopCryptosQuery } from '../hooks/useMarketData';
 
 const TopCryptoTable = () => {
-  const [cryptoData, setCryptoData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(6);
 
-  useEffect(() => {
-    const fetchTopCryptos = async () => {
-      try {
-        setLoading(true);
-        
-        // Obtener datos de Binance
-        const binanceResponse = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-        const binanceData = await binanceResponse.json();
-        
-        // Filtrar y ordenar por volumen en USD
-        const usdtPairs = binanceData
-          .filter(pair => pair.symbol.endsWith('USDT'))
-          .map(crypto => {
-            const price = parseFloat(crypto.lastPrice);
-            const volume = parseFloat(crypto.volume);
-            const quoteVolume = parseFloat(crypto.quoteVolume); // Volumen en USDT
-            return {
-              ...crypto,
-              name: crypto.symbol.replace('USDT', ''),
-              image: `https://lcw.nyc3.cdn.digitaloceanspaces.com/production/currencies/64/${crypto.symbol.replace('USDT', '').toLowerCase()}.png`,
-              price,
-              volume,
-              quoteVolume
-            };
-          })
-          .sort((a, b) => b.quoteVolume - a.quoteVolume)
-          .slice(0, 25); // Tomar los top 25 para tener suficientes para la paginación
-        
-        setCryptoData(usdtPairs);
-      } catch (err) {
-        setError('Error al cargar datos');
-        console.error('Error fetching crypto data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: cryptoData = [], isLoading, error } = useTopCryptosQuery();
 
-    fetchTopCryptos();
-    const interval = setInterval(fetchTopCryptos, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <Card className="w-full h-[300px] overflow-hidden bg-[#0f0f0f]">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={300}>
-          <CircularProgress sx={{ color: '#00f2ea' }} />
+      <Card className="w-full p-6">
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={220}>
+          <CircularProgress sx={{ color: '#5cc8ff' }} />
         </Box>
       </Card>
     );
@@ -78,127 +35,86 @@ const TopCryptoTable = () => {
 
   if (error) {
     return (
-      <Card className="w-full h-[300px] overflow-hidden bg-[#0f0f0f]">
-        <Box p={2} textAlign="center">
-          <Typography color="error">{error}</Typography>
-        </Box>
+      <Card className="w-full p-4">
+        <Alert severity="error">Error al cargar datos de mercado.</Alert>
       </Card>
     );
   }
 
   return (
-    <div className="w-full mt-3">
-      <Card className="w-full p-3 md:p-5">
-        <div className="flex flex-col space-y-4">
-          <Typography variant="h6" component="h2" className="text-lg font-semibold text-[#eef2ff] mb-2">
-            Top Criptomonedas
-          </Typography>
-          <Typography sx={{ color: '#9fb0db', fontSize: 13 }}>
-            Pares USDT ordenados por volumen en las últimas 24h
-          </Typography>
-        </div>
-        
-        <div className="overflow-y-auto px-4 pb-4">
-          <table className="w-full mt-2">
-            <thead className="sticky top-0 bg-[#0f1629] border-b border-[#253354]">
-              <tr className="text-left">
-                <th className="py-3 text-sm font-medium text-[#95a7d6]">Ranking</th>
-                <th className="py-3 text-sm font-medium text-[#95a7d6]">Cripto</th>
-                <th className="py-3 text-sm font-medium text-[#95a7d6]">Precio</th>
-                <th className="py-3 text-sm font-medium text-[#95a7d6] text-right">Cambio 24h</th>
-                <th className="py-3 text-sm font-medium text-[#95a7d6] text-right">Volumen 24h</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#253354]">
-              {cryptoData
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((crypto, index) => {
-                  const priceChangePercent = parseFloat(crypto.priceChangePercent);
-                  const isPositive = priceChangePercent >= 0;
-                  const rank = page * rowsPerPage + index + 1;
-                  
-                  return (
-                    <tr key={crypto.symbol} className="hover:bg-[#18213a] transition-colors">
-                      <td className="py-3 text-[#95a7d6] w-16">#{rank}</td>
-                      <td className="py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#1b2543] flex items-center justify-center overflow-hidden">
-                            <img
-                              src={crypto.image}
-                              alt={crypto.name}
-                              className="w-6 h-6"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSIxNiIgZmlsbD0iIzE5MWIxRiIvPjxwYXRoIGQ9Ik0yMS4xNjkgMTYuOTk1YzAgMC43Mi0wLjI1MiAxLjMyOS0wLjc1NiAxLjgyNy0wLjUwNCAwLjQ5OC0xLjExNiAwLjc0Ny0xLjgzNyAwLjc0N2gtMS4yOTh2Mi40MzFoLTIuNTU2di04LjAwMWgzLjg1NGMwLjcyIDAgMS4zMzMgMC4yNDkgMS44MzcgMC43NDcgMC41MDQgMC40OTggMC43NTYgMS4xMDcgMC43NTYgMS44Mjd2MC40MjJ6TTE4LjU3NiAxNi41NzNWMTUuNzNoLTEuMjk4djEuNjg0aDEuMjk4di0wLjg0MXoiIGZpbGw9IiM5OTk5OTkiLz48L3N2Zz4=';
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <div className="text-base font-medium text-white">{crypto.name}</div>
-                            <div className="text-sm text-gray-400">USDT</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3">
-                        <div className="text-base text-white">
-                          ${crypto.price.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 8
-                          })}
-                        </div>
-                      </td>
-                      <td className="py-3 text-right">
-                        <div className={`inline-flex items-center gap-1 text-base ${
-                          isPositive ? 'text-[#35e8ff]' : 'text-[#ff6d8a]'
-                        }`}>
-                          {isPositive ? (
-                            <ArrowUpRight className="w-4 h-4" />
-                          ) : (
-                            <ArrowDownRight className="w-4 h-4" />
-                          )}
-                          {Math.abs(priceChangePercent).toFixed(2)}%
-                        </div>
-                      </td>
-                      <td className="py-3 text-right">
-                        <div className="text-base text-white">
-                          ${crypto.quoteVolume.toLocaleString(undefined, {
-                            maximumFractionDigits: 0
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-              })}
-            </tbody>
-          </table>
-        </div>
-        
-        <TablePagination
-          component="div"
-          count={cryptoData.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[6, 10, 25]}
-          sx={{
-            color: 'white',
-            '.MuiTablePagination-select': {
-              color: 'white'
-            },
-            '.MuiTablePagination-selectIcon': {
-              color: 'white'
-            },
-            '.MuiTablePagination-displayedRows': {
-              color: 'white'
-            },
-            '.MuiIconButton-root': {
-              color: 'white'
-            }
-          }}
-        />
-      </Card>
-    </div>
+    <Card className="w-full p-3 md:p-5">
+      <Typography variant="h6" component="h2" sx={{ color: 'text.primary', mb: 0.8 }}>
+        Top Criptomonedas
+      </Typography>
+      <Typography sx={{ color: 'text.secondary', fontSize: 13, mb: 1.6 }}>
+        Pares USDT ordenados por volumen en las últimas 24h.
+      </Typography>
+
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ color: 'text.secondary' }}>Rank</TableCell>
+              <TableCell sx={{ color: 'text.secondary' }}>Cripto</TableCell>
+              <TableCell sx={{ color: 'text.secondary' }}>Precio</TableCell>
+              <TableCell align="right" sx={{ color: 'text.secondary' }}>
+                Cambio 24h
+              </TableCell>
+              <TableCell align="right" sx={{ color: 'text.secondary' }}>
+                Volumen 24h
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {cryptoData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((crypto, index) => {
+              const priceChangePercent = parseFloat(crypto.priceChangePercent);
+              const isPositive = priceChangePercent >= 0;
+              const rank = page * rowsPerPage + index + 1;
+              return (
+                <TableRow key={crypto.symbol} hover>
+                  <TableCell sx={{ color: '#95a7d6' }}>#{rank}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                      <Avatar src={crypto.image} alt={crypto.name} sx={{ width: 28, height: 28, bgcolor: '#1b2543' }} />
+                      <Box>
+                        <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 14 }}>{crypto.name}</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>USDT</Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ color: 'text.primary' }}>
+                    ${crypto.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4, color: isPositive ? '#24d69a' : '#ff6d8a' }}>
+                      {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                      {Math.abs(priceChangePercent).toFixed(2)}%
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right" sx={{ color: 'text.primary' }}>
+                    ${crypto.quoteVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={cryptoData.length}
+        page={page}
+        onPageChange={(event, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(event) => {
+          setRowsPerPage(parseInt(event.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[6, 10, 25]}
+        sx={{ color: 'text.secondary' }}
+      />
+    </Card>
   );
 };
 

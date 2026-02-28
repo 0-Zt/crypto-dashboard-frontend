@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Stack, Typography } from '@mui/material';
+import React, { useState, useMemo } from 'react';
+import { Alert, Box, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import IndicatorsPanel from './IndicatorsPanel';
-import MultiTimeframepanel from './MultiTimeframepanel';
+import MultiTimeframePanel from './MultiTimeframepanel';
 import TradingSuggestions from './TradingSuggestions';
 import TopCryptoTable from './TopCryptoTable';
 import TradingViewChart from './TradingViewChart';
 import { Card } from './ui/card';
+import { useSymbolsQuery } from '../hooks/useMarketData';
 
 const DEFAULT_SYMBOL = 'BTCUSDT';
 const DEFAULT_TIMEFRAME = '1h';
@@ -15,10 +16,10 @@ const selectStyles = {
     borderColor: 'rgba(128, 152, 215, 0.4)',
   },
   '&:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'rgba(53, 232, 255, 0.7)',
+    borderColor: 'rgba(92, 200, 255, 0.7)',
   },
   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: '#35e8ff',
+    borderColor: '#5cc8ff',
   },
   '& .MuiSelect-select': {
     color: '#f4f7ff',
@@ -29,62 +30,34 @@ const selectStyles = {
 const Dashboard = () => {
   const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
   const [timeframe, setTimeframe] = useState(DEFAULT_TIMEFRAME);
-  const [symbols, setSymbols] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredSymbols, setFilteredSymbols] = useState([]);
 
-  useEffect(() => {
-    fetch('https://api.binance.com/api/v3/exchangeInfo')
-      .then((response) => response.json())
-      .then((data) => {
-        const pairs = data.symbols.filter((s) => s.status === 'TRADING').map((s) => s.symbol);
-        setSymbols(pairs);
-        setFilteredSymbols(pairs);
-      })
-      .catch((error) => {
-        console.error('Error fetching symbols:', error);
-        setSymbols([]);
-        setFilteredSymbols([]);
-      });
-  }, []);
+  const { data: symbols = [], isLoading: symbolsLoading, error: symbolsError } = useSymbolsQuery();
 
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = symbols.filter((sym) => sym.toLowerCase().includes(searchTerm.toLowerCase()));
-      setFilteredSymbols(filtered);
-    } else {
-      setFilteredSymbols(symbols);
-    }
+  const filteredSymbols = useMemo(() => {
+    if (!searchTerm) return symbols;
+    return symbols.filter((sym) => sym.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [searchTerm, symbols]);
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        minHeight: '100vh',
-        margin: 0,
-        pt: 2.5,
-        pb: 2,
-        pl: { xs: 2, md: 33 },
-        pr: 2,
-      }}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 w-full">
-        <div className="lg:col-span-3 space-y-4">
+    <Box sx={{ width: '100%', minHeight: '100vh', pt: 2.5, pb: 2, pl: { xs: 2, md: 33 }, pr: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 1fr' }, gap: 2 }}>
+        <Box>
           <Card className="p-4 md:p-5">
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5} alignItems={{ xs: 'stretch', md: 'center' }}>
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ color: '#9eb0dd', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Typography sx={{ color: 'text.secondary', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
                   Symbol
                 </Typography>
                 <FormControl fullWidth>
-                  <InputLabel sx={{ color: '#9eb0dd' }}>Symbol</InputLabel>
+                  <InputLabel sx={{ color: 'text.secondary' }}>Symbol</InputLabel>
                   <Select
                     value={symbol}
                     label="Symbol"
                     onChange={(event) => setSymbol(event.target.value)}
                     onOpen={() => setSearchTerm('')}
                     sx={selectStyles}
+                    disabled={symbolsLoading}
                     MenuProps={{
                       PaperProps: {
                         style: {
@@ -103,16 +76,10 @@ const Dashboard = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onClick={(e) => e.stopPropagation()}
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            color: '#f4f7ff',
-                            '& fieldset': { borderColor: 'rgba(128, 152, 215, 0.4)' },
-                          },
-                        }}
                       />
                     </MenuItem>
                     {filteredSymbols.map((sym) => (
-                      <MenuItem key={sym} value={sym} sx={{ color: '#dce4ff', '&:hover': { backgroundColor: 'rgba(53, 80, 145, 0.2)' } }}>
+                      <MenuItem key={sym} value={sym}>
                         {sym}
                       </MenuItem>
                     ))}
@@ -121,11 +88,11 @@ const Dashboard = () => {
               </Box>
 
               <Box sx={{ flex: 1 }}>
-                <Typography sx={{ color: '#9eb0dd', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Typography sx={{ color: 'text.secondary', fontSize: 12, mb: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
                   Timeframe
                 </Typography>
                 <FormControl fullWidth>
-                  <InputLabel sx={{ color: '#9eb0dd' }}>Timeframe</InputLabel>
+                  <InputLabel sx={{ color: 'text.secondary' }}>Timeframe</InputLabel>
                   <Select value={timeframe} label="Timeframe" onChange={(event) => setTimeframe(event.target.value)} sx={selectStyles}>
                     <MenuItem value="1m">1m</MenuItem>
                     <MenuItem value="5m">5m</MenuItem>
@@ -138,23 +105,25 @@ const Dashboard = () => {
               </Box>
             </Stack>
 
-            <div className="flex flex-col w-full gap-6 mt-6">
-              <div className="w-full">
-                <TradingViewChart symbol={symbol} timeframe={timeframe} />
-              </div>
-              <div className="w-full mt-0">
-                <TopCryptoTable />
-              </div>
-            </div>
-          </Card>
-        </div>
+            {symbolsError && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                No se pudieron cargar los símbolos. Intenta recargar la página.
+              </Alert>
+            )}
 
-        <div className="space-y-4">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+              <TradingViewChart symbol={symbol} timeframe={timeframe} />
+              <TopCryptoTable />
+            </Box>
+          </Card>
+        </Box>
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <IndicatorsPanel symbol={symbol} timeframe={timeframe} />
           <TradingSuggestions symbol={symbol} timeframe={timeframe} />
-          <MultiTimeframepanel symbol={symbol} />
-        </div>
-      </div>
+          <MultiTimeframePanel symbol={symbol} />
+        </Box>
+      </Box>
     </Box>
   );
 };
