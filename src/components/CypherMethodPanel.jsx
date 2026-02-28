@@ -65,6 +65,23 @@ export default function CypherMethodPanel({ symbol }) {
           ))}
         </div>
       )}
+
+      <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+        <div className="text-slate-400">Sommi Flag</div>
+        <div className="text-slate-200 text-right">
+          {data?.sommi?.bullFlag ? 'Bull' : data?.sommi?.bearFlag ? 'Bear' : '—'}
+        </div>
+
+        <div className="text-slate-400">Sommi Diamond</div>
+        <div className="text-slate-200 text-right">
+          {data?.sommi?.bullDiamond ? 'Bull' : data?.sommi?.bearDiamond ? 'Bear' : '—'}
+        </div>
+
+        <div className="text-slate-400">WT Divergence</div>
+        <div className="text-slate-200 text-right">
+          {data?.wtDivergences?.bullishRegular ? 'Bull Reg' : data?.wtDivergences?.bearishRegular ? 'Bear Reg' : '—'}
+        </div>
+      </div>
     </Card>
   );
 }

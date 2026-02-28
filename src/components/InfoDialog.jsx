@@ -112,6 +112,14 @@ const InfoDialog = ({ open, onClose }) => {
       title: 'Cypher 4h-first',
       text: 'Método principal en 4h: esperar sobrecompra/sobreventa + cruce WT + confirmación MFI/VWAP. Solo bajar a 2h si la tendencia de 4h es clara para continuación.',
     },
+    {
+      title: 'Sommi Flag / Diamond',
+      text: 'Patrones de confirmación del Cypher: Flag y Diamond ayudan a filtrar entradas débiles. Se usan como confirmación, no como señal única.',
+    },
+    {
+      title: 'WT Divergences',
+      text: 'Divergencias entre precio y WaveTrend (regular/hidden) pueden anticipar reversión o continuación. Son un extra de calidad de setup.',
+    },
   ];
 
   return (
